@@ -1,14 +1,14 @@
 import io
 from setuptools import setup, find_packages
 
-requirements = ["logzero", "simplejson", "prompt_toolkit"]
+requirements = ["logzero>=1.5", "simplejson>=3.17", "prompt_toolkit>=3.0"]
 
 # Use the README.md content for the long description:
 with io.open("README.md", encoding="utf-8") as fo:
     long_description = fo.read()
 
 setup(
-    name="AutoTUI",
+    name="autotui",
     version="0.0.1",
     url="https://github.com/seanbreckenridge/autotui",
     author="Sean Breckenridge",

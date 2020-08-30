@@ -3,8 +3,11 @@ AutoTUI
 
 helpers for creating TUIs with persistent data
 
-TODO
+TODO:
 
+- push a real release to pypi
+- add documentation to readme (look at [tests](https://github.com/seanbreckenridge/autotui/blob/master/tests/test_autotui.py) for now)
+- add demo and videos
 
 ## Installation
 
