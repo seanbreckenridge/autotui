@@ -1,4 +1,4 @@
-## autotui
+# autotui
 
 This uses type hints to convert `NamedTuple`'s to JSON, and back to python objects.
 
@@ -57,14 +57,8 @@ This requires `python3.8+`, specifically for modern [`typing`](https://docs.pyth
 To install with pip, run:
 
     pip3 install autotui
+    pip3 install 'autotui[optional]'  # to install dateparser, for parsing human-readable times
 
-## Run
-
-```
-TODO: Fill this out
-
-Usage: ...
-```
 
 # Tests
 
