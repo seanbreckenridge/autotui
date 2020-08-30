@@ -35,7 +35,7 @@ s = namedtuple_sequence_dumps([w], indent=None)
 # [{"at": 1598805438, "glass_count": 5.0}]
 
 # and back to the NamedTuple
-b = autotui.namedtuple_sequence_loads(s, to=Water)
+b = namedtuple_sequence_loads(s, to=Water)
 # [Water(at=datetime.datetime(2020, 8, 30, 16, 40, 1, tzinfo=datetime.timezone.utc), glass_count=5.0)]
 ```
 
