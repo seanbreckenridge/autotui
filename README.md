@@ -20,13 +20,23 @@ Note: Doesn't support all of these recursively, if your [algebraic data type](ht
 I wrote this so that I don't have to repeatedly write boilerplate-y python code to validate/serialize/deserialize data. As an example, if I want to log whenever I drink water to a file:
 
 ```
+from autotui import *
+
 # something to persist to a file
 class Water(NamedTuple):
     at: datetime
     glass_count: float
 
-w = autotui.prompt_namedtuple(Water)  # prompts me and validates the input by inpsecting types
-print(w)  # Water(at=datetime.datetime(2020, 8, 30, 9, 26, 24, 168034), glass_count=5.0)
+w = prompt_namedtuple(Water)  # prompts me and validates the input by inpsecting types
+# Water(at=datetime.datetime(2020, 8, 30, 9, 26, 24, 168034), glass_count=5.0)
+
+# convert it to JSON
+s = namedtuple_sequence_dumps([w], indent=None)
+# [{"at": 1598805438, "glass_count": 5.0}]
+
+# and back to the NamedTuple
+b = autotui.namedtuple_sequence_loads(s, to=Water)
+# [Water(at=datetime.datetime(2020, 8, 30, 16, 40, 1, tzinfo=datetime.timezone.utc), glass_count=5.0)]
 ```
 
 For what the user input/validation looks like, see [Video Demo]()

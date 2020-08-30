@@ -10,3 +10,8 @@ class Water(NamedTuple):
 w = autotui.prompt_namedtuple(Water)
 print(w)
 
+s = autotui.namedtuple_sequence_dumps([w], indent=None)
+print(s)
+
+b = autotui.namedtuple_sequence_loads(s, to=Water)
+print(b[0])
