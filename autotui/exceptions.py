@@ -1,0 +1,2 @@
+class AutoTUIException(RuntimeError):
+    pass

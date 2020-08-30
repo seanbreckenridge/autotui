@@ -1,8 +1,10 @@
+import sys
+from datetime import datetime
 from typing import Type, Optional, Callable, List, Union
 
 from prompt_toolkit import prompt
 from prompt_toolkit.validation import Validator, ValidationError
-from prompt_toolkit.shortcuts import button_dialog
+from prompt_toolkit.shortcuts import button_dialog, input_dialog, message_dialog
 from prompt_toolkit.styles import Style
 
 dark_mode = Style.from_dict(
@@ -11,6 +13,7 @@ dark_mode = Style.from_dict(
         "dialog frame.label": "bg:#ffffff #000000",
         "dialog.body": "bg:#000000 #D3D3D3",
         "dialog shadow": "bg:#000000",
+        "text-area": "#000000",
     }
 )
 
@@ -103,10 +106,58 @@ def prompt_bool(
     ).run()
 
 
+## DATETIME
+
+
+def prompt_datetime(
+    for_attr: Optional[str] = None,
+    prompt_msg: Optional[str] = None,
+) -> datetime:
+    m: str = handle_prompt(datetime, for_attr, prompt_msg)
+    use_current_time = button_dialog(
+        title="How to pick date?",
+        text=m,
+        buttons=[("Now", True), ("Describe", False)],
+        style=dark_mode,
+    ).run()
+    if use_current_time:
+        return datetime.now()
+    else:
+        try:
+            import dateparser
+        except ImportError as e:
+            print(str(e))
+            print(
+                "Could not find dateparser module, run 'pip3 install dateparser' to be able to parse date strings"
+            )
+            sys.exit(1)
+        parsed_time: Optional[datetime] = None
+        while parsed_time is None:
+            time_str: Optional[str] = input_dialog(
+                title="Describe the datetime:",
+                text="For example:\n'2 hours ago', 'noon', 'tomorrow at 10PM', 'may 30th at 8PM'",
+                style=dark_mode,
+            ).run()
+            if time_str is None:
+                print("Cancelled, using current time...")
+                return datetime.now()
+            parsed_time = dateparser.parse(time_str)
+            if parsed_time is None:
+                message_dialog(
+                    title="Error",
+                    text=f"Could not parse '{time_str}' into datetime...",
+                    style=dark_mode,
+                ).run()
+        return parsed_time
+
+
 ## LIST/SET repeat-prompt?
 
+
 def prompt_ask_another(
-    for_attr: Optional[str] = None, prompt_msg: Optional[str] = None, dialog_title: str = "==="
+    for_attr: Optional[str] = None,
+    prompt_msg: Optional[str] = None,
+    dialog_title: str = "===",
 ) -> bool:
     m = prompt_msg
     if m is None:
@@ -121,13 +172,16 @@ def prompt_ask_another(
         style=dark_mode,
     ).run()
 
+
 ## Optional
+
 
 def prompt_optional(
     func: Callable,
     for_attr: Optional[str] = None,
     prompt_msg: Optional[str] = None,
-    dialog_title: str = "==="):
+    dialog_title: str = "===",
+):
     """
     A helper to ask if the user wants to enter information for an optional.
     If the user confirms, calls func (which asks the user for input)
@@ -148,12 +202,16 @@ def prompt_optional(
     else:
         return None
 
+
 ##  wrap some function and display the specified thrown errors as validation errors
 
-def prompt_wrap_error(func: Callable,
-                      catch_errors: Optional[List[Type]] = [],
-                      for_attr: Optional[str] = None,
-                      prompt_msg: Optional[str] = None):
+
+def prompt_wrap_error(
+    func: Callable,
+    catch_errors: Optional[List[Type]] = [],
+    for_attr: Optional[str] = None,
+    prompt_msg: Optional[str] = None,
+):
     """
     Takes the prompt string, some function which takes the string the user
     is typing as input, and possible errors to catch.
@@ -179,4 +237,3 @@ def prompt_wrap_error(func: Callable,
                     raise e
 
     return func(prompt(m, validator=LambdaPromptValidator()))
-

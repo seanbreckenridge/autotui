@@ -1,7 +1,7 @@
 import typing
 
-from typing import Optional, Tuple, Type, Union, List, Any, Set
 from datetime import datetime
+from typing import Optional, Tuple, Type, Union, List, Any, Set, Sequence
 
 # A lot of these are helpers from:
 # https://github.com/karlicoss/cachew/blob/f4db4a6c6609170642c6cd09d50b52ac4c0edec9/src/cachew/__init__.py#L144
@@ -22,13 +22,16 @@ CONTAINERS = {
     set: Type[Set],
 }
 
+
 def add_to_container(container: Union[List, Set], item: Any):
     if isinstance(container, list):
         container.append(item)
     elif isinstance(container, set):
         container.add(item)
     else:
-        raise RuntimeError(f"{type(container)} is not a list/set, not sure how to add to")
+        raise RuntimeError(
+            f"{type(container)} is not a list/set, not sure how to add to"
+        )
     return container
 
 
@@ -44,6 +47,23 @@ def get_union_args(cls) -> Optional[Tuple[Type]]:
 
 def is_union(cls):
     return get_union_args(cls) is not None
+
+
+def get_collection_types(cls) -> Tuple[Type, Type]:
+    """
+    >>> from typing import List
+    >>> get_collection_types(List[int])
+    (<class 'int'>, <class 'int'>)
+    >>> get_collection_types(Set[bool])
+    (<class 'set'>, <class 'bool'>)
+    """
+    container_type: Type = strip_generic(cls)
+    # e.g. if List[int], internal[0] == int
+    internal: Sequence[Type] = typing.get_args(cls)  # requires 3.8
+    assert (
+        len(internal) == 1
+    ), f"Expected 1 argument for {container_type}, got {len(internal)}"
+    return container_type, internal[0]
 
 
 def strip_optional(cls) -> Tuple[Type, bool]:
@@ -106,24 +126,3 @@ def is_supported_container(cls: Type) -> bool:
     False
     """
     return strip_generic(cls) in CONTAINERS
-
-
-def is_string(a: Any) -> bool:
-    return type(a) == str
-
-
-def is_int(a: Any) -> bool:
-    return type(a) == int
-
-
-def is_float(a: Any) -> bool:
-    return type(a) == float
-
-
-def is_bool(a: Any) -> bool:
-    return type(a) == bool
-
-
-def is_datetime(a: Any) -> bool:
-    return type(a) == datetime
-
