@@ -53,7 +53,7 @@ def get_collection_types(cls) -> Tuple[Type, Type]:
     """
     >>> from typing import List
     >>> get_collection_types(List[int])
-    (<class 'int'>, <class 'int'>)
+    (<class 'list'>, <class 'int'>)
     >>> get_collection_types(Set[bool])
     (<class 'set'>, <class 'bool'>)
     """
