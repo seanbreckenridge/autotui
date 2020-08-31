@@ -35,7 +35,7 @@ class Action(NamedTuple):
     duration: timedelta
 
 
-# AutoHanler describes what function to use to validate
+# AutoHandler describes what function to use to validate
 # user input, and which errors to wrap while validating
 timedelta_handler = AutoHandler(
     func=_timedelta,  # accepts the string the user is typing as input
@@ -65,7 +65,7 @@ a = prompt_namedtuple(
 # Note: this specifies timedelta as the type,
 # not int. It uses what the NamedTuple
 # specifies as the type for that field, not
-# the type of value thats loaded from JSON
+# the type of the value thats loaded from JSON
 
 # dump to JSON
 a_str: str = namedtuple_sequence_dumps(
