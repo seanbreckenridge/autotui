@@ -38,8 +38,8 @@ from .exceptions import AutoTUIException
 
 class AutoHandler(NamedTuple):
     func: Callable
-    # if no exceptions are passed, catches all exceptions
-    catch_errors: List[Type] = [Exception]
+    # if no exceptions are passed, catches no exceptions
+    catch_errors: List[Type] = []
     prompt_msg: Optional[str] = None
 
 
