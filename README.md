@@ -79,8 +79,8 @@ This requires `python3.8+`, specifically for modern [`typing`](https://docs.pyth
 
 To install with pip, run:
 
-    pip3 install autotui
-    pip3 install 'autotui[optional]'  # to install dateparser, for parsing human-readable times
+    pip install autotui
+    pip install 'autotui[optional]'  # to install dateparser, for parsing human-readable times
 
 ### Custom Types
 
