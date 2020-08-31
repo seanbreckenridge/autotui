@@ -107,6 +107,12 @@ def is_primitive(cls: Type) -> bool:
     >>> from typing import Dict
     >>> is_primitive(int)
     True
+    >>> is_primitive(str)
+    True
+    >>> is_primitive(float)
+    True
+    >>> is_primitive(bool)
+    True
     >>> is_primitive(set)
     False
     """

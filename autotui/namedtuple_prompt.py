@@ -63,7 +63,7 @@ def _get_validator(
             return lambda: prompt_bool(attr_name)
         elif cls == datetime:
             return lambda: prompt_datetime(attr_name)
-    raise AutoTUIException(f"no way to handle prompting {cls}")
+    raise AutoTUIException(f"no way to handle prompting {cls.__name__}")
 
 
 # ask first would be set if is_optional was true
@@ -143,6 +143,11 @@ def namedtuple_prompt_funcs(
 
     Else, prints an error and fails
     """
+
+    # warn if not a subclass of a NamedTuple
+    #if not isinstance(nt, NamedTuple):
+        #warnings.warn(f"{nt.__name__} isn't an instance of a NamedTuple")
+
     # example:
     # class X(NamedTuple):
     #    a: int

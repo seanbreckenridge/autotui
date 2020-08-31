@@ -1,7 +1,7 @@
 import os
 import tempfile
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import NamedTuple, Optional, List, Set
 
 import simplejson
@@ -334,3 +334,12 @@ def test_custom_handles_serializers():
 
     # delete file
     os.unlink(f.name)
+
+class Action(NamedTuple):
+    t: timedelta
+
+def test_no_way_to_handle_propting():
+    with pytest.raises(AutoTUIException) as aex:
+        autotui.prompt_namedtuple(Action)
+    assert str(aex.value) == "no way to handle prompting timedelta"
+

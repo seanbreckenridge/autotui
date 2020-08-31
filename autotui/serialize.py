@@ -91,7 +91,7 @@ def serialize_namedtuple(
     return json_dict
 
 
-def _deserialize_datetime(secs_since_epoch: int) -> int:
+def _deserialize_datetime(secs_since_epoch: int) -> datetime:
     return datetime.fromtimestamp(secs_since_epoch, timezone.utc)
 
 
