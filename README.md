@@ -23,8 +23,6 @@ I wrote this so that I don't have to repeatedly write boilerplate-y python code 
 
 As an example, if I want to log whenever I drink water to a file:
 
-<img src="https://raw.githubusercontent.com/seanbreckenridge/autotui/master/.assets/builtin_demo.gif">
-
 ```
 from datetime import datetime
 from typing import NamedTuple
@@ -38,6 +36,8 @@ class Water(NamedTuple):
 if __name__ == "__main__":
     load_prompt_and_writeback(Water, "~/.local/share/water.json")
 ```
+
+<img src="https://raw.githubusercontent.com/seanbreckenridge/autotui/master/.assets/builtin_demo.gif">
 
 Which, after running a few times, would create:
 
@@ -56,24 +56,21 @@ Which, after running a few times, would create:
 ]
 ```
 
-If I want to load the values back into python, I'd do:
+*(datetimes are serialized into epoch time)*
+
+If I want to load the values back into python, its just:
 
 ```
-from pprint import pprint
 from autotui.shortcuts import load_from
 
 class Water(NamedTuple):
     #... (same as above)
 
 if __name__ == "__main__":
-    pprint(load_from(Water, "~/.local/share/water.json"))
-```
+    print(load_from(Water, "~/.local/share/water.json"))
 
-Which prints:
-
-```
-[Water(at=datetime.datetime(2020, 8, 31, 6, 53, 6, tzinfo=datetime.timezone.utc), glass_count=2.0),
- Water(at=datetime.datetime(2020, 8, 31, 6, 53, 20, tzinfo=datetime.timezone.utc), glass_count=1.0)]
+#[Water(at=datetime.datetime(2020, 8, 31, 6, 53, 6, tzinfo=datetime.timezone.utc), glass_count=2.0),
+# Water(at=datetime.datetime(2020, 8, 31, 6, 53, 20, tzinfo=datetime.timezone.utc), glass_count=1.0)]
 ```
 
 ## Installation
@@ -193,7 +190,7 @@ The general philosophy I've taken for serialization and deserialization is send 
 
 Theres lots of examples on how this is handled/edge-cases in the [`tests`](./tests/test_autotui.py).
 
-You can also take a look at the [`examples`](./examples) for common usage.
+You can also take a look at the [`examples`](./examples)
 
 # Tests
 
