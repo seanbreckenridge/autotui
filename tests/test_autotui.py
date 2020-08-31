@@ -153,12 +153,6 @@ def test_leave_optional_collection_none():
     assert l.b == {True}
 
 
-def test_non_optional_default_to_empty_collection():
-    loaded = {"b": [True]}
-    l = autotui.deserialize_namedtuple(loaded, L)
-    assert l.b == {True}
-
-
 def test_default_value_on_non_optional_collection():
     loaded = simplejson.loads("{}")
     with pytest.warns(None) as record:
