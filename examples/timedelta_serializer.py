@@ -19,19 +19,24 @@ def _timedelta(user_input: str) -> timedelta:
     return timedelta(minutes=float(minutes), seconds=float(seconds))
 
 
-def from_seconds(seconds: int) -> timedelta:
-    return timedelta(seconds=seconds)
-
-
+# serializer for timedelta, converts to JSON-compatible integer
 def to_seconds(t: timedelta) -> int:
     return int(t.total_seconds())
 
 
+# deserializer from integer to timedelta
+def from_seconds(seconds: int) -> timedelta:
+    return timedelta(seconds=seconds)
+
+
+# The data we want to persist to the file
 class Action(NamedTuple):
     name: str
     duration: timedelta
 
 
+# AutoHanler describes what function to use to validate
+# user input, and which errors to wrap while validating
 timedelta_handler = AutoHandler(
     func=_timedelta,  # accepts the string the user is typing as input
     catch_errors=[ValueError],
@@ -45,6 +50,9 @@ timedelta_handler = AutoHandler(
 # which is either the type being serialized
 # or deserialized
 
+# use the validator to prompt the user for the NamedTuple data
+# name: str automatically uses a generic string prompt
+# duration: timedelta gets handled by the type_validator
 type_validators = {timedelta: timedelta_handler}
 a = prompt_namedtuple(
     Action,
@@ -52,6 +60,12 @@ a = prompt_namedtuple(
         timedelta: timedelta_handler,
     },
 )
+
+
+# Note: this specifies timedelta as the type,
+# not int. It uses what the NamedTuple
+# specifies as the type for that field, not
+# the type of value thats loaded from JSON
 
 # dump to JSON
 a_str: str = namedtuple_sequence_dumps(
@@ -84,3 +98,4 @@ print(a)
 print(a_str)
 print(a_load)
 print(a_load2)
+
