@@ -15,7 +15,7 @@ This has built-ins to prompt, validate and serialize:
 * `List[<type>]`
 * `Set[<type>]`
 
-Note: Doesn't support all of these recursively, if your [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type) is getting to complicated and `autotui` can't parse it, you can always specify another `NamedTuple` as the type and pass a `type_validators`/`type_[de]serializer` to handle the validation/serialization/deserialization for that type/attribute name. (see below for examples)
+Note: Doesn't support all of these recursively, see below for more info.
 
 I wrote this so that I don't have to repeatedly write boilerplate-y python code to validate/serialize/deserialize data. As an example, if I want to log whenever I drink water to a file:
 
@@ -40,6 +40,16 @@ b = namedtuple_sequence_loads(s, to=Water)
 ```
 
 For what the user input/validation looks like, see [Video Demo]()
+
+### Custom Types
+
+If your [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type) is getting to complicated and `autotui` can't parse it, you can always specify another `NamedTuple` or type, and pass a `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.
+
+```
+# add example
+```
+
+Video Demo
 
 TODO:
 
