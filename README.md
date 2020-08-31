@@ -135,7 +135,6 @@ timedelta_handler = AutoHandler(
 # use the validator to prompt the user for the NamedTuple data
 # name: str automatically uses a generic string prompt
 # duration: timedelta gets handled by the type_validator
-type_validators = {timedelta: timedelta_handler}
 a = prompt_namedtuple(
     Action,
     type_validators={
