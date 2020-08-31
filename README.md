@@ -86,7 +86,7 @@ To install with pip, run:
 
 If your [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type) is getting too complicated and `autotui` can't parse it, you can always specify another `NamedTuple` or type, and pass a `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.
 
-As a more complicated example, heres a validator for `timdelta`, being entered as MM:SS, and the corresponding serializers.
+As a more complicated example, heres a validator for [`timedelta`](https://docs.python.org/3.8/library/datetime.html#datetime.timedelta) (duration of time), being entered as MM:SS, and the corresponding serializers.
 
 ```
 # see examples/timedelta_serializer.py for imports
