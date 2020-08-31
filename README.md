@@ -17,30 +17,62 @@ This has built-ins to prompt, validate and serialize:
 
 Note: Doesn't support all of these recursively, see below for more info.
 
-I wrote this so that I don't have to repeatedly write boilerplate-y python code to validate/serialize/deserialize data. As an example, if I want to log whenever I drink water to a file:
+I wrote this so that I don't have to repeatedly write boilerplate-y python code to validate/serialize/deserialize data.
+
+As an example, if I want to log whenever I drink water to a file:
+
+<img src="https://raw.githubusercontent.com/seanbreckenridge/autotui/master/.assets/builtin_demo.gif">
 
 ```
-from autotui import *
+from datetime import datetime
+from typing import NamedTuple
 
-# something to persist to a file
+from autotui.shortcuts import load_prompt_and_writeback
+
 class Water(NamedTuple):
     at: datetime
     glass_count: float
 
-w = prompt_namedtuple(Water)  # prompts me and validates the input by inpsecting types
-# Water(at=datetime.datetime(2020, 8, 30, 9, 26, 24, 168034), glass_count=5.0)
-
-# convert it to JSON
-s = namedtuple_sequence_dumps([w], indent=None)
-# [{"at": 1598805438, "glass_count": 5.0}]
-
-# and back to the NamedTuple
-b = namedtuple_sequence_loads(s, to=Water)
-# [Water(at=datetime.datetime(2020, 8, 30, 16, 40, 1, tzinfo=datetime.timezone.utc), glass_count=5.0)]
+if __name__ == "__main__":
+    load_prompt_and_writeback(Water, "~/.local/share/water.json")
 ```
 
-<img src="https://raw.githubusercontent.com/seanbreckenridge/autotui/master/.assets/builtin_demo.gif">
+Which, after running a few times, would create:
 
+`~/.local/share/water.json`
+
+```
+[
+    {
+        "at": 1598856786,
+        "glass_count": 2.0
+    },
+    {
+        "at": 1598856800,
+        "glass_count": 1.0
+    }
+]
+```
+
+If I want to load the values back into python, I'd do:
+
+```
+from pprint import pprint
+from autotui.shortcuts import load_from
+
+class Water(NamedTuple):
+    #... (same as above)
+
+if __name__ == "__main__":
+    pprint(load_from(Water, "~/.local/share/water.json"))
+```
+
+Which prints:
+
+```
+[Water(at=datetime.datetime(2020, 8, 31, 6, 53, 6, tzinfo=datetime.timezone.utc), glass_count=2.0),
+ Water(at=datetime.datetime(2020, 8, 31, 6, 53, 20, tzinfo=datetime.timezone.utc), glass_count=1.0)]
+```
 
 ## Installation
 
@@ -55,7 +87,7 @@ To install with pip, run:
 
 If your [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type) is getting to complicated and `autotui` can't parse it, you can always specify another `NamedTuple` or type, and pass a `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.
 
-As a more complicated example, heres a validator for a user typing a duration as MM:SS, and the corresponding serializers.
+As a more complicated example, heres a validator for `timdelta`, being entered as MM:SS, and the corresponding serializers.
 
 ```
 # see examples/timedelta_serializer.py for imports
@@ -164,9 +196,6 @@ You can also take a look at the [`examples`](./examples) for common usage.
 TODO:
 
 - push a real release to pypi
-- add shortcut to serialize/deserialize to XDG data dir automatically
-
-
 
 # Tests
 

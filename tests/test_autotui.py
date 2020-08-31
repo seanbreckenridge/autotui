@@ -8,6 +8,7 @@ import simplejson
 import pytest
 import autotui
 from autotui.exceptions import AutoTUIException
+from autotui.shortcuts import load_from, dump_to
 
 
 class P(NamedTuple):
@@ -331,6 +332,28 @@ def test_custom_handles_serializers():
     assert len(rbr) == 2
     assert int(rbr[0].when.timestamp()) == int(d1.timestamp())
     assert rbr[0].temp == Temperature("20C")
+
+    # delete file
+    os.unlink(f.name)
+
+def test_shortcuts():
+    cur = datetime.now()
+    t = Temperature("20C")
+    f = tempfile.NamedTemporaryFile(delete=False)
+
+    type_serializers = {Temperature: serialize_temp}
+    attr_deserializers = {"temp": deserialize_temp}
+
+    readings: List[Reading] = [
+        Reading(when=cur, temp=t)
+    ]
+
+    dump_to(readings, f.name, type_serializers=type_serializers)
+
+    lr: List[Reading] = load_from(Reading, f.name, attr_deserializers=attr_deserializers)
+    assert len(lr) == 1
+    assert lr[0].temp == t
+    assert int(lr[0].when.timestamp()) == int(cur.timestamp())
 
     # delete file
     os.unlink(f.name)
