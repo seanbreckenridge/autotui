@@ -178,21 +178,25 @@ def test_expected_key_warning():
     assert len(record) == 2
     assert "Expected key a on non-optional field" in str(record[0].message)
     assert x.a == None
-    assert 'For value None, expected type int, found NoneType' == str(record[1].message)
+    assert "For value None, expected type int, found NoneType" == str(record[1].message)
+
 
 class X_OPT(NamedTuple):
     a: Optional[int]
+
 
 def test_optional_key_loads_with_no_warnings():
     loaded = simplejson.loads("{}")
     x = autotui.deserialize_namedtuple(loaded, X_OPT)
     assert x.a is None
 
+
 def deserialize_a(x: Optional[int]):
     if x is None:
         return 0
     else:
         return x
+
 
 def test_optional_specified_null_deserializer():
     # note: type_deserializers dont specify the type of the dynamically loaded value,
@@ -206,18 +210,24 @@ def test_optional_specified_null_deserializer():
     # None is not a type on X_OPT. Could do it against int,
     # should use an attr_deserializer in this case
     loaded = simplejson.loads('{"a": null}')
-    attr_deserializers = {'a': deserialize_a}
-    x = autotui.deserialize_namedtuple(loaded, X_OPT, attr_deserializers=attr_deserializers)
+    attr_deserializers = {"a": deserialize_a}
+    x = autotui.deserialize_namedtuple(
+        loaded, X_OPT, attr_deserializers=attr_deserializers
+    )
     assert x.a == 0
 
     # could also do like
     loaded = simplejson.loads('{"a": null}')
     type_deserializers = {int: deserialize_a}  # specify int, not NoneType
-    x = autotui.deserialize_namedtuple(loaded, X_OPT, type_deserializers=type_deserializers)
+    x = autotui.deserialize_namedtuple(
+        loaded, X_OPT, type_deserializers=type_deserializers
+    )
     assert x.a == 0
+
 
 class LL(NamedTuple):
     a: List[int]
+
 
 def test_null_in_containers_warns():
     loaded = simplejson.loads('{"a": [1,null,3]}')
@@ -226,6 +236,7 @@ def test_null_in_containers_warns():
     assert len(record) == 1
     assert "expected type int, found NoneType" in str(record[0].message)
     assert x.a == [1, None, 3]
+
 
 def test_serialize_none_warning():
     x = X(a=None)
@@ -331,6 +342,7 @@ def test_custom_handles_serializers():
     # delete file
     os.unlink(f.name)
 
+
 def test_shortcuts():
     cur = datetime.now()
     t = Temperature("20C")
@@ -339,13 +351,13 @@ def test_shortcuts():
     type_serializers = {Temperature: serialize_temp}
     attr_deserializers = {"temp": deserialize_temp}
 
-    readings: List[Reading] = [
-        Reading(when=cur, temp=t)
-    ]
+    readings: List[Reading] = [Reading(when=cur, temp=t)]
 
     dump_to(readings, f.name, type_serializers=type_serializers)
 
-    lr: List[Reading] = load_from(Reading, f.name, attr_deserializers=attr_deserializers)
+    lr: List[Reading] = load_from(
+        Reading, f.name, attr_deserializers=attr_deserializers
+    )
     assert len(lr) == 1
     assert lr[0].temp == t
     assert int(lr[0].when.timestamp()) == int(cur.timestamp())
@@ -353,11 +365,12 @@ def test_shortcuts():
     # delete file
     os.unlink(f.name)
 
+
 class Action(NamedTuple):
     t: timedelta
+
 
 def test_no_way_to_handle_propting():
     with pytest.raises(AutoTUIException) as aex:
         autotui.prompt_namedtuple(Action)
     assert str(aex.value) == "no way to handle prompting timedelta"
-
