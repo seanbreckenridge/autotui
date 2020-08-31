@@ -324,7 +324,8 @@ def test_custom_handles_serializers():
     assert "No known way to deserialize" in str(record[0].message)
     assert len(readings_back) == 2
     assert readings_back[0].temp == 20.0
-    # then load
+
+    # then load properly
     with open(f.name) as fp:
         rbr = autotui.namedtuple_sequence_load(
             fp, to=Reading, attr_deserializers=attr_deserializers

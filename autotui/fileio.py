@@ -43,7 +43,9 @@ def namedtuple_sequence_dump(
     s_obj: List[Dict[str, Any]] = []
     for nt in nt_items:
         s_obj.append(serialize_namedtuple(nt, attr_serializers, type_serializers))
-    return simplejson.dump(s_obj, fp, **kwargs)
+    # dump to string first, so JSON serialization errors dont cause data losses
+    nt_string: str = simplejson.dumps(s_obj, **kwargs)
+    fp.write(nt_string)
 
 
 def namedtuple_sequence_loads(
