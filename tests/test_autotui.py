@@ -374,3 +374,31 @@ def test_no_way_to_handle_propting():
     with pytest.raises(AutoTUIException) as aex:
         autotui.prompt_namedtuple(Action)
     assert str(aex.value) == "no way to handle prompting timedelta"
+
+
+class Broken(object):
+    pass
+
+
+def test_passed_non_namedtuple():
+    with pytest.warns(None) as record:
+        autotui.namedtuple_prompt_funcs(Broken)
+
+    assert len(record) == 1
+    assert "No parameters extracted from object, may not be NamedTuple?" == str(
+        record[0].message
+    )
+
+
+class EmptyNamedTuple(NamedTuple):
+    pass
+
+
+def test_passed_namedtuple_with_no_attrs():
+    with pytest.warns(None) as record:
+        autotui.namedtuple_prompt_funcs(EmptyNamedTuple)
+
+    assert len(record) == 1
+    assert "No parameters extracted from object, may not be NamedTuple?" == str(
+        record[0].message
+    )

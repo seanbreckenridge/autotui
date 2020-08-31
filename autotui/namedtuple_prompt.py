@@ -1,5 +1,6 @@
 import functools
 import inspect
+import warnings
 from datetime import datetime
 from typing import (
     Any,
@@ -207,6 +208,9 @@ def namedtuple_prompt_funcs(
             validator_map[attr_name] = _maybe_wrap_optional(
                 attr_name, promptfunc, is_optional
             )
+    # warn if no attributes are extracted
+    if len(validator_map) == 0:
+        warnings.warn("No parameters extracted from object, may not be NamedTuple?")
     return validator_map
 
 
