@@ -6,12 +6,6 @@ if sys.version_info[0] == 3 and sys.version_info[1] < 8:
     warnings.warn("autotui requires at least python3.8")
 
 import os
-import logging
-from logzero import loglevel
-
-# use like AUTOTUI_LOGS=5 <run python>
-# https://docs.python.org/3/library/logging.html#logging-levels
-loglevel(int(os.environ.get("AUTOTUI_LOGS", logging.INFO)))
 
 from .validators import (
     prompt_str,

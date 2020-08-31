@@ -12,8 +12,6 @@ from typing import (
     Callable,
 )
 
-from logzero import logger
-
 from .typehelpers import (
     is_primitive,
     is_supported_container,
@@ -160,8 +158,6 @@ def namedtuple_prompt_funcs(
     # to populate the namedtuple fields
     validator_map: Dict[str, Callable] = {}
 
-    logger.debug(f"Creating functions for {nt}")
-
     # example:
     # [('a', <Parameter "a: int">), ('b', <Parameter "b: float">), ('c', <Parameter "c: str">)]
     for attr_name, param_type in sig.parameters.items():
@@ -170,9 +166,6 @@ def namedtuple_prompt_funcs(
         nt_annotation = param_type.annotation
         # (<class 'int'>, False)
         attr_type, is_optional = strip_optional(nt_annotation)
-        logger.debug(f"==> For attr: {attr_name}")
-        logger.debug(f"Type: {attr_type}")
-        logger.debug(f"Optional?: {is_optional}")
 
         # if the user specified a validator for this attribute name, use that
         if attr_name in attr_validators.keys():
@@ -200,8 +193,6 @@ def namedtuple_prompt_funcs(
             )
             # wrap to ask one or more times
             # wrap in container_type List/Set
-            logger.debug(f"Container internal attribute type: {attr_type}")
-            logger.debug(f"Container type: {container_type}")
             validator_map[attr_name] = _prompt_many(
                 attr_name, promptfunc, container_type, is_optional
             )

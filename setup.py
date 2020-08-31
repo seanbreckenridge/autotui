@@ -1,7 +1,7 @@
 import io
 from setuptools import setup, find_packages
 
-requirements = ["logzero>=1.5", "simplejson>=3.17", "prompt_toolkit>=3.0"]
+requirements = ["simplejson>=3.17", "prompt_toolkit>=3.0"]
 
 # Use the README.md content for the long description:
 with io.open("README.md", encoding="utf-8") as fo:
@@ -9,11 +9,11 @@ with io.open("README.md", encoding="utf-8") as fo:
 
 setup(
     name="autotui",
-    version="0.0.1",
+    version="0.1.0",
     url="https://github.com/seanbreckenridge/autotui",
     author="Sean Breckenridge",
     author_email="seanbrecke@gmail.com",
-    description=("""helpers for creating TUIs with persistent data"""),
+    description=("""helpers for creating TUIs with persistent typed data"""),
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
