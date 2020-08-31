@@ -149,6 +149,7 @@ def test_basic_iterable_deserialize():
 def test_leave_optional_collection_none():
     loaded = simplejson.loads('{"b": [true]}')
     l = autotui.deserialize_namedtuple(loaded, L)
+    # shouldnt warn, just serializes to None
     assert l.a == None
     assert l.b == {True}
 
@@ -158,7 +159,10 @@ def test_default_value_on_non_optional_collection():
     with pytest.warns(None) as record:
         l = autotui.deserialize_namedtuple(loaded, L)
     assert len(record) == 2
-    assert "Expected key b on non-optional field" in str(record[0].message)
+    assert (
+        "Expected key b on non-optional field, no such key existed in loaded data"
+        == str(record[0].message)
+    )
     assert (
         "No value loaded for non-optional type b, defaulting to empty container"
         in str(record[1].message)
@@ -191,11 +195,16 @@ def test_optional_key_loads_with_no_warnings():
     assert x.a is None
 
 
+# this is a way to handle serializing null types into
+# some default value
 def deserialize_a(x: Optional[int]):
     if x is None:
         return 0
     else:
         return x
+
+
+# could be done similarly to serialize nulls into a default
 
 
 def test_optional_specified_null_deserializer():
@@ -229,6 +238,18 @@ class LL(NamedTuple):
     a: List[int]
 
 
+def test_no_value_for_collection_non_optional_warning():
+    l = LL(a=None)
+    with pytest.warns(None) as record:
+        lnt = autotui.serialize_namedtuple(l)
+    assert len(record) == 1
+    assert (
+        "No value found for non-optional type a, defaulting to empty container"
+        == str(record[0].message)
+    )
+    assert lnt["a"] == []
+
+
 def test_null_in_containers_warns():
     loaded = simplejson.loads('{"a": [1,null,3]}')
     with pytest.warns(None) as record:
@@ -238,12 +259,12 @@ def test_null_in_containers_warns():
     assert x.a == [1, None, 3]
 
 
-def test_serialize_none_warning():
+def test_no_way_to_serialize_warning():
     x = X(a=None)
     with pytest.warns(None) as record:
         sx = autotui.serialize_namedtuple(x)
     assert len(record) == 1
-    assert "has a value of None" in str(record[0].message)
+    assert "No value for non-optional type None, attempting to be serialized to int"
     assert sx["a"] is None
 
 
@@ -374,6 +395,17 @@ def test_no_way_to_handle_propting():
     with pytest.raises(AutoTUIException) as aex:
         autotui.prompt_namedtuple(Action)
     assert str(aex.value) == "no way to handle prompting timedelta"
+
+
+def test_no_way_to_serialize():
+    a = Action(t=timedelta(seconds=5))
+    with pytest.warns(None) as record:
+        not_serialized = autotui.serialize_namedtuple(a)
+    assert len(record) == 1
+    assert "No known way to serialize timedelta" == str(record[0].message)
+    with pytest.raises(TypeError) as te:
+        simplejson.dumps(not_serialized)
+    assert "Object of type timedelta is not JSON serializable" == str(te.value)
 
 
 class Broken(object):

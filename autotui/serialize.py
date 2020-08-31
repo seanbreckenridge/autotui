@@ -16,7 +16,9 @@ def _serialize_datetime(dt: datetime) -> int:
     return int(dt.timestamp())
 
 
-def _serialize_type(value: Any, cls: Type, type_serializers: Dict[Type, Callable]):
+def _serialize_type(
+    value: Any, cls: Type, is_optional: bool, type_serializers: Dict[Type, Callable]
+):
     """
     Gets one of the built-in serializers or a type_serializers from the user,
     and serializes the value from the NamedTuple to that
@@ -28,8 +30,17 @@ def _serialize_type(value: Any, cls: Type, type_serializers: Dict[Type, Callable
             # serialize into epoch time
             return _serialize_datetime(value)
         else:
-            return value  # all other primitives are JSON compatible
-    warnings.warn(f"No known way to serialize {cls}")
+            # value can still be None here, we checked against namedtuple field type, not the dynamic
+            # type of the value given
+            if value is None:
+                if not is_optional:
+                    warnings.warn(
+                        f"No value for non-optional type {value}, attempting to be serialized to {cls.__name__}"
+                    )
+                return None  # serialized to null
+            else:
+                return value  # all other primitives are JSON compatible
+    warnings.warn(f"No known way to serialize {cls.__name__}")
     return value
     # raise? it'll fail when simplejson fails to do it anyways, so
     # might as well leave it
@@ -70,23 +81,40 @@ def serialize_namedtuple(
             # serialize the value into the return dict
             json_dict[attr_name] = attr_serializers[attr_name](attr_value)
             continue
-        # if the user didn't supply a way to handle this by attr_name,
-        # and if its still none, it should be serialized to null
-        if attr_value is None:
-            if not is_optional:
-                warnings.warn("Non-optional attribute {attr_value} has a value of None")
-            json_dict[attr_name] = None
         if is_supported_container(attr_type):
             container_type, internal_type = get_collection_types(attr_type)
+            # if is_optional == True, attr_value can't be None
+            # if we're serialzing an non-optional, and the value is null,
+            # set it to an empty container...
+            # you can't pass a type_serializer (which is passed to _serialize_type)
+            # to handle the internal type of a collection, if the collection is None
+            # you *can* use an attr_serializer to handle the entire field, but
+            # not the internal type
+            if attr_value is None:
+                if not is_optional:
+                    warnings.warn(
+                        f"No value found for non-optional type {attr_name}, defaulting to empty container"
+                    )
+                    json_dict[attr_name] = container_type([])
+                else:
+                    json_dict[attr_name] = None
+                continue
+            # TODO: wrap TypeError? if attr_value is iterable,
+            # might not work as expected if attr_value is a string, and we iterate over chars
             json_dict[attr_name] = [
-                _serialize_type(x, internal_type, type_serializers) for x in attr_value
+                _serialize_type(x, internal_type, type_serializers, is_optional=False)
+                for x in attr_value
             ]
         else:
             # single type, like:
             # a: int
             # b: Optional[str]
+            # contrary to above, if attr_value here is None, we can try to use
+            # any type_serializers for the attr_type that the user passed.
+            # If that doesn't work, it warns the user that theres no way to
+            # serialize a NoneType
             json_dict[attr_name] = _serialize_type(
-                attr_value, attr_type, type_serializers
+                attr_value, attr_type, is_optional, type_serializers
             )
     return json_dict
 
