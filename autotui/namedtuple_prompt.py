@@ -143,8 +143,8 @@ def namedtuple_prompt_funcs(
     """
 
     # warn if not a subclass of a NamedTuple
-    #if not isinstance(nt, NamedTuple):
-        #warnings.warn(f"{nt.__name__} isn't an instance of a NamedTuple")
+    # if not isinstance(nt, NamedTuple):
+    # warnings.warn(f"{nt.__name__} isn't an instance of a NamedTuple")
 
     # example:
     # class X(NamedTuple):

@@ -95,7 +95,9 @@ def _deserialize_datetime(secs_since_epoch: int) -> datetime:
     return datetime.fromtimestamp(secs_since_epoch, timezone.utc)
 
 
-def _deserialize_type(value: Any, cls: Type, is_optional: bool, type_deserializers: Dict[Type, Callable]):
+def _deserialize_type(
+    value: Any, cls: Type, is_optional: bool, type_deserializers: Dict[Type, Callable]
+):
     """
     Gets one of the built-in deserializers or a type_deserializers from the user,
     and deserializes the loaded value to the NamedTuple representation
@@ -112,7 +114,9 @@ def _deserialize_type(value: Any, cls: Type, is_optional: bool, type_deserialize
             for expected_type in [float, int, bool, str]:
                 if cls == expected_type:
                     if type(value) != expected_type:
-                        warnings.warn(f"For value {value}, expected type {expected_type.__name__}, found {type(value).__name__}")
+                        warnings.warn(
+                            f"For value {value}, expected type {expected_type.__name__}, found {type(value).__name__}"
+                        )
             return value  # all other primitives are JSON compatible
     warnings.warn(f"No known way to deserialize {cls}")
     return value
@@ -156,7 +160,6 @@ def deserialize_namedtuple(
             json_dict[attr_name] = attr_deserializers[attr_name](loaded_value)
             continue
 
-
         # key wasnt in loaded value
         if loaded_value is None and not is_optional:
             warnings.warn(
@@ -186,7 +189,9 @@ def deserialize_namedtuple(
                 # this warns in cases I think are wrong, but doesn't enforce anything
                 json_dict[attr_name] = container_type(
                     [
-                        _deserialize_type(x, internal_type, is_optional, type_deserializers)
+                        _deserialize_type(
+                            x, internal_type, is_optional, type_deserializers
+                        )
                         for x in loaded_value
                     ]
                 )
