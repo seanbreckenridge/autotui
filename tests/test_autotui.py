@@ -180,10 +180,57 @@ def test_expected_key_warning():
     loaded = simplejson.loads("{}")
     with pytest.warns(None) as record:
         x = autotui.deserialize_namedtuple(loaded, X)
-    assert len(record) == 1
+    assert len(record) == 2
     assert "Expected key a on non-optional field" in str(record[0].message)
     assert x.a == None
+    assert 'For value None, expected type int, found NoneType' == str(record[1].message)
 
+class X_OPT(NamedTuple):
+    a: Optional[int]
+
+def test_optional_key_loads_with_no_warnings():
+    loaded = simplejson.loads("{}")
+    x = autotui.deserialize_namedtuple(loaded, X_OPT)
+    assert x.a is None
+
+def deserialize_a(x: Optional[int]):
+    if x is None:
+        return 0
+    else:
+        return x
+
+def test_optional_specified_null_deserializer():
+    # note: type_deserializers dont specify the type of the dynamically loaded value,
+    # they specify the type specified by the namedtuple.
+    # so cant do something like
+    # loaded = simplejson.loads("{}")
+    # none_deserializer = {type(None): lambda _x: 0}
+    # x = autotui.deserialize_namedtuple(loaded, X_OPT, type_deserializers=none_deserializer)
+    # assert x.a == 0
+    # in this case, because it expects int. The none_deserializer is never used, becuase
+    # None is not a type on X_OPT. Could do it against int,
+    # should use an attr_deserializer in this case
+    loaded = simplejson.loads('{"a": null}')
+    attr_deserializers = {'a': deserialize_a}
+    x = autotui.deserialize_namedtuple(loaded, X_OPT, attr_deserializers=attr_deserializers)
+    assert x.a == 0
+
+    # could also do like
+    loaded = simplejson.loads('{"a": null}')
+    type_deserializers = {int: deserialize_a}  # specify int, not NoneType
+    x = autotui.deserialize_namedtuple(loaded, X_OPT, type_deserializers=type_deserializers)
+    assert x.a == 0
+
+class LL(NamedTuple):
+    a: List[int]
+
+def test_null_in_containers_warns():
+    loaded = simplejson.loads('{"a": [1,null,3]}')
+    with pytest.warns(None) as record:
+        x = autotui.deserialize_namedtuple(loaded, LL)
+    assert len(record) == 1
+    assert "expected type int, found NoneType" in str(record[0].message)
+    assert x.a == [1, None, 3]
 
 def test_serialize_none_warning():
     x = X(a=None)

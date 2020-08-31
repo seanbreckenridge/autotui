@@ -95,21 +95,25 @@ def _deserialize_datetime(secs_since_epoch: int) -> int:
     return datetime.fromtimestamp(secs_since_epoch, timezone.utc)
 
 
-def _deserialize_type(value: Any, cls: Type, type_deserializers: Dict[Type, Callable]):
+def _deserialize_type(value: Any, cls: Type, is_optional: bool, type_deserializers: Dict[Type, Callable]):
     """
     Gets one of the built-in deserializers or a type_deserializers from the user,
     and deserializes the loaded value to the NamedTuple representation
     """
     if cls in type_deserializers:
         return type_deserializers[cls](value)
+    if is_optional and value is None:
+        return value
     if is_primitive(cls):
         if cls == datetime:
             # serialize into epoch time
             return _deserialize_datetime(value)
         else:
+            for expected_type in [float, int, bool, str]:
+                if cls == expected_type:
+                    if type(value) != expected_type:
+                        warnings.warn(f"For value {value}, expected type {expected_type.__name__}, found {type(value).__name__}")
             return value  # all other primitives are JSON compatible
-    if value is None:
-        return value
     warnings.warn(f"No known way to deserialize {cls}")
     return value
 
@@ -152,6 +156,7 @@ def deserialize_namedtuple(
             json_dict[attr_name] = attr_deserializers[attr_name](loaded_value)
             continue
 
+
         # key wasnt in loaded value
         if loaded_value is None and not is_optional:
             warnings.warn(
@@ -169,16 +174,24 @@ def deserialize_namedtuple(
                     json_dict[attr_name] = container_type([])
                 else:
                     # else, set the optional container to none
+                    # e.g. Optional[List[int]]
                     json_dict[attr_name] = None
             else:
+                # if list contains nulls, _deserialize_type warns
+                # its sort of up to the user how they want to use
+                # - Optional[List[int]]
+                # should the value be null? should it be empty list?
+                # Does it somehow mean
+                # - List[Optional[int]] (it shouldnt)
+                # this warns in cases I think are wrong, but doesn't enforce anything
                 json_dict[attr_name] = container_type(
                     [
-                        _deserialize_type(x, internal_type, type_deserializers)
+                        _deserialize_type(x, internal_type, is_optional, type_deserializers)
                         for x in loaded_value
                     ]
                 )
         else:
             json_dict[attr_name] = _deserialize_type(
-                loaded_value, attr_type, type_deserializers
+                loaded_value, attr_type, is_optional, type_deserializers
             )
     return to(**json_dict)
