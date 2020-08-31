@@ -39,7 +39,7 @@ b = namedtuple_sequence_loads(s, to=Water)
 # [Water(at=datetime.datetime(2020, 8, 30, 16, 40, 1, tzinfo=datetime.timezone.utc), glass_count=5.0)]
 ```
 
-For what the user input/validation looks like, see [Video Demo]()
+<img src="https://raw.githubusercontent.com/seanbreckenridge/autotui/master/.assets/builtin_demo.gif">
 
 ### Custom Types
 
