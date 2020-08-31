@@ -13,9 +13,10 @@ from typing import (
 from . import (
     AutoHandler,
     prompt_namedtuple,
-    namedtuple_sequence_dump,
+    namedtuple_sequence_dumps,
     namedtuple_sequence_load,
 )
+
 
 def _normalize(_path: Union[Path, str]) -> Path:
     p = _path
@@ -29,6 +30,7 @@ def _normalize(_path: Union[Path, str]) -> Path:
 # likely its mistyped. Can always use the underlying
 # functions if you'd prefer to do that.
 
+
 def dump_to(
     items: List[NamedTuple],
     path: Union[Path, str],
@@ -36,11 +38,14 @@ def dump_to(
     type_serializers: Dict[Type, Callable] = {},
 ) -> None:
     p = _normalize(path)
-    with p.open(mode='w') as f:
-        namedtuple_sequence_dump(items, f,
-                                 attr_serializers=attr_serializers,
-                                 type_serializers=type_serializers,
-                                 )
+    # serialize to string before opening file
+    # if serialization fails, file is left alone
+    nt_string: str = namedtuple_sequence_dumps(
+        items, attr_serializers=attr_serializers, type_serializers=type_serializers
+    )
+    with p.open(mode="w") as f:
+        f.write(nt_string)
+
 
 # args are slightly reordered here, comapared to json.load
 # to be consistent with dump_to
@@ -51,10 +56,13 @@ def load_from(
     type_deserializers: Dict[Type, Callable] = {},
 ) -> List[NamedTuple]:
     p = _normalize(path)
-    with p.open(mode='r') as f:
-        items = namedtuple_sequence_load(f, to,
-                                         attr_deserializers=attr_deserializers,
-                                         type_deserializers=type_deserializers)
+    with p.open(mode="r") as f:
+        items = namedtuple_sequence_load(
+            f,
+            to,
+            attr_deserializers=attr_deserializers,
+            type_deserializers=type_deserializers,
+        )
     return items
 
 
@@ -67,7 +75,8 @@ def load_prompt_and_writeback(
     type_serializers: Dict[str, Callable] = {},
     attr_deserializers: Dict[str, Callable] = {},
     type_deserializers: Dict[str, Callable] = {},
-    create_file=True) -> List[NamedTuple]:
+    create_file=True,
+) -> List[NamedTuple]:
     """
     Load the NamedTuples from the JSON file specified by 'path' and 'to'
 
@@ -92,4 +101,3 @@ def load_prompt_and_writeback(
     # dump back to file
     dump_to(items, p, attr_serializers, type_serializers)
     return items
-
