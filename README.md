@@ -41,26 +41,8 @@ b = namedtuple_sequence_loads(s, to=Water)
 
 <img src="https://raw.githubusercontent.com/seanbreckenridge/autotui/master/.assets/builtin_demo.gif">
 
-### Custom Types
-
-If your [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type) is getting to complicated and `autotui` can't parse it, you can always specify another `NamedTuple` or type, and pass a `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.
-
-```
-# add example
-```
-
-Video Demo
-
-TODO:
-
-- push a real release to pypi
-- add documentation to readme (look at [tests](https://github.com/seanbreckenridge/autotui/blob/master/tests/test_autotui.py) for now)
-- add demo and videos
-- add shortcut to serialize/deserialize to XDG data dir automatically
 
 ## Installation
-
-#### Requires:
 
 This requires `python3.8+`, specifically for modern [`typing`](https://docs.python.org/3/library/typing.html) support.
 
@@ -68,6 +50,122 @@ To install with pip, run:
 
     pip3 install autotui
     pip3 install 'autotui[optional]'  # to install dateparser, for parsing human-readable times
+
+### Custom Types
+
+If your [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type) is getting to complicated and `autotui` can't parse it, you can always specify another `NamedTuple` or type, and pass a `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.
+
+As a more complicated example, heres a validator for a user typing a duration as MM:SS, and the corresponding serializers.
+
+```
+# see examples/timedelta_serializer.py for imports
+
+# handle validating the user input
+# can throw a ValueError
+def _timedelta(user_input: str) -> timedelta:
+    if len(user_input.strip()) == 0:
+        raise ValueError("Not enough input!")
+    minutes, _, seconds = user_input.partition(":")
+    # could throw ValueError
+    return timedelta(minutes=float(minutes), seconds=float(seconds))
+
+
+def from_seconds(seconds: int) -> timedelta:
+    return timedelta(seconds=seconds)
+
+
+def to_seconds(t: timedelta) -> int:
+    return int(t.total_seconds())
+
+
+class Action(NamedTuple):
+    name: str
+    duration: timedelta
+
+
+timedelta_handler = AutoHandler(
+    func=_timedelta,  # accepts the string the user is typing as input
+    catch_errors=[ValueError],
+)
+
+# Note: validators are of type
+# Dict[Type, AutoHandler]
+# serializer/deserializers are
+# Dict[Type, Callable]
+# the Callable accepts one argument,
+# which is either the type being serialized
+# or deserialized
+
+type_validators = {timedelta: timedelta_handler}
+a = prompt_namedtuple(
+    Action,
+    type_validators={
+        timedelta: timedelta_handler,
+    },
+)
+
+
+# Note: this specifies timedelta as the type,
+# not int. It uses what the NamedTuple
+# specifies as the type for that field, not
+# the type of value thats loaded from JSON
+
+# dump to JSON
+a_str: str = namedtuple_sequence_dumps(
+    [a],
+    type_serializers={
+        timedelta: to_seconds,
+    },
+    indent=None,
+)
+
+# load from JSON
+a_load = namedtuple_sequence_loads(
+    a_str,
+    to=Action,
+    type_deserializers={
+        timedelta: from_seconds,
+    },
+)[0]
+
+# can also specify with attributes instead of types
+a_load2 = namedtuple_sequence_loads(
+    a_str,
+    to=Action,
+    attr_deserializers={
+        "duration": from_seconds,
+    },
+)[0]
+
+print(a)
+print(a_str)
+print(a_load)
+print(a_load2)
+```
+
+Output:
+
+```
+$ python3 ./examples/timedelta_serializer.py
+'name' (str) > on the bus
+'duration' (_timedelta) > 30:00
+Action(name='on the bus', duration=datetime.timedelta(seconds=1800))
+[{"name": "on the bus", "duration": 1800}]
+Action(name='on the bus', duration=datetime.timedelta(seconds=1800))
+Action(name='on the bus', duration=datetime.timedelta(seconds=1800))
+```
+
+The general philosophy I've taken for serialization and deserialization is send a warning if the types aren't what the NamedTuple expects, but load the values anyways. If serialization can't serialize something, it warns, and if `simplejson.dump` doesn't have a way to handle it, it throws an error. When deserializing, all values are loaded from their JSON primitives, and then converted into their corresponding python equivalents; If the value doesn't exist, it warns and sets it to None, if theres a deserializer supplied, it uses that. This is meant to help facilitate quick TUIs, I don't want to have to fight with it.
+
+Theres lots of examples on how this is handled in the [`tests`](./tests/test_autotui.py).
+
+You can also take a look at the [`examples`](./examples) for common usage.
+
+TODO:
+
+- push a real release to pypi
+- add shortcut to serialize/deserialize to XDG data dir automatically
+
 
 
 # Tests

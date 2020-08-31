@@ -7,6 +7,7 @@ class Water(NamedTuple):
     at: datetime
     glass_count: float
 
+
 w = autotui.prompt_namedtuple(Water)
 print(w)
 
