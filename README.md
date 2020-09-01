@@ -73,6 +73,8 @@ if __name__ == "__main__":
 # Water(at=datetime.datetime(2020, 8, 31, 6, 53, 20, tzinfo=datetime.timezone.utc), glass_count=1.0)]
 ```
 
+A lot of my usage of this only ever uses 3 functions in the [`autotui.shortcuts`](https://github.com/seanbreckenridge/autotui/blob/master/autotui/shortcuts.py) module; `dump_to` to dump a sequence of my `NamedTuple`s to a file, `load_from` to do the opposite, and `load_prompt_and_writeback`, to load values in, prompt me, and write back to the file.
+
 ## Installation
 
 This requires `python3.8+`, specifically for modern [`typing`](https://docs.python.org/3/library/typing.html) support.

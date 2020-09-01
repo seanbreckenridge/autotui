@@ -37,6 +37,13 @@ def dump_to(
     attr_serializers: Dict[str, Callable] = {},
     type_serializers: Dict[Type, Callable] = {},
 ) -> None:
+    """
+    Takes a list of NamedTuples (or subclasses) and a path to a file.
+    Serializes the items into a string, using the attr_serializers and
+    type_serializers to handle custom types if specified.
+
+    If serialization succeeds, writes to the file.
+    """
     p = _normalize(path)
     # serialize to string before opening file
     # if serialization fails, file is left alone
@@ -55,6 +62,14 @@ def load_from(
     attr_deserializers: Dict[str, Callable] = {},
     type_deserializers: Dict[Type, Callable] = {},
 ) -> List[NamedTuple]:
+    """
+    Takes a type to load and a path to a file containing JSON.
+    Reads from the file, and deserializes the items into a list,
+    using the attr_deserializers and type_deserializers to handle
+    custom types if specified.
+
+    Returns the list of items read from the file.
+    """
     p = _normalize(path)
     with p.open(mode="r") as f:
         items = namedtuple_sequence_load(
@@ -78,6 +93,8 @@ def load_prompt_and_writeback(
     create_file=True,
 ) -> List[NamedTuple]:
     """
+    An entry point to entire library, essentially.
+
     Load the NamedTuples from the JSON file specified by 'path' and 'to'
 
     If the file doesn't exist and the create_file flag is True, ignores the
@@ -85,6 +102,8 @@ def load_prompt_and_writeback(
 
     After reading the NamedTuples from the file, prompts you to add a new item,
     adds that to the list it reads in, and writes back to the file
+
+    accepts validators, serializers and deserializers for each step of the process.
     """
     p = _normalize(path)
     # read from file
