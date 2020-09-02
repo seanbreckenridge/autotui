@@ -47,8 +47,8 @@ timedelta_handler = AutoHandler(
 # serializer/deserializers are
 # Dict[Type, Callable]
 # the Callable accepts one argument,
-# which is either the type being serialized
-# or deserialized
+# which is either the python value being serialized
+# or the JSON value being deserialized
 
 # use the validator to prompt the user for the NamedTuple data
 # name: str automatically uses a generic string prompt
