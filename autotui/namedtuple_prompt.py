@@ -135,7 +135,7 @@ def namedtuple_prompt_funcs(
     type_validators: Dict[Type, AutoHandler] = {},
 ):
     """
-    Parses the signature of a NamedTuple recieved from the User
+    Parses the signature of a NamedTuple received from the User
 
     If any of the parameters cant be handled by autotui supported validators,
     checks the vaidators dict for user-supplied ones.

@@ -118,7 +118,7 @@ def test_supply_serializer_deserializer():
         wd, WeightData, type_deserializers={Weight: weight_deserializer}
     )
     assert type(bw) == type(w)
-    # annoyig becuase of tz_info
+    # annoyig because of tz_info
     # assert bw.when == cur
     assert int(bw.when.timestamp()) == timestamp
     assert bw.data == Weight("20lbs")
@@ -128,7 +128,7 @@ def test_supply_serializer_deserializer():
         wd, WeightData, attr_deserializers={"data": weight_deserializer}
     )
     assert type(bw) == type(w)
-    # annoyig becuase of tz_info
+    # annoyig because of tz_info
     # assert bw.when == cur
     assert int(bw.when.timestamp()) == timestamp
     assert bw.data == Weight("20lbs")
@@ -215,7 +215,7 @@ def test_optional_specified_null_deserializer():
     # none_deserializer = {type(None): lambda _x: 0}
     # x = autotui.deserialize_namedtuple(loaded, X_OPT, type_deserializers=none_deserializer)
     # assert x.a == 0
-    # in this case, because it expects int. The none_deserializer is never used, becuase
+    # in this case, because it expects int. The none_deserializer is never used, because
     # None is not a type on X_OPT. Could do it against int,
     # should use an attr_deserializer in this case
     loaded = simplejson.loads('{"a": null}')
@@ -287,7 +287,7 @@ def test_doesnt_load_non_iterable():
 
 @dataclass(init=False)
 class Temperature:
-    celcius: float
+    celsius: float
 
     def __init__(self, reading_raw: str):
         if len(reading_raw) < 1:
@@ -297,9 +297,9 @@ class Temperature:
             raise TypeError("Must end with 'F' or 'C'")
         tempstr = reading_raw.rstrip("C").rstrip("F")
         if scale == "C":
-            self.celcius = float(tempstr)  # could raise ValueError
+            self.celsius = float(tempstr)  # could raise ValueError
         else:
-            self.celcius = (float(tempstr) - 32) * 5 / 9
+            self.celsius = (float(tempstr) - 32) * 5 / 9
 
 
 class Reading(NamedTuple):
@@ -308,7 +308,7 @@ class Reading(NamedTuple):
 
 
 def serialize_temp(x: Temperature) -> float:
-    return x.celcius
+    return x.celsius
 
 
 def deserialize_temp(x: float) -> Temperature:
@@ -317,7 +317,7 @@ def deserialize_temp(x: float) -> Temperature:
 
 def test_custom_handles_serializers():
     t = Temperature("20C")
-    assert t.celcius == 20.0
+    assert t.celsius == 20.0
     # just test creating the namedtuple prompt
     handler = autotui.AutoHandler(
         func=Temperature, catch_errors=[TypeError, ValueError]
