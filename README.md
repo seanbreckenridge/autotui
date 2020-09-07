@@ -23,7 +23,7 @@ I wrote this so that I don't have to repeatedly write boilerplate-y python code 
 
 As an example, if I want to log whenever I drink water to a file:
 
-```
+```python
 from datetime import datetime
 from typing import NamedTuple
 
@@ -43,7 +43,7 @@ Which, after running a few times, would create:
 
 `~/.local/share/water.json`
 
-```
+```json
 [
     {
         "at": 1598856786,
@@ -60,7 +60,7 @@ Which, after running a few times, would create:
 
 If I want to load the values back into python, its just:
 
-```
+```python
 from autotui.shortcuts import load_from
 
 class Water(NamedTuple):
@@ -90,7 +90,7 @@ If your [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type)
 
 As a more complicated example, heres a validator for [`timedelta`](https://docs.python.org/3.8/library/datetime.html#datetime.timedelta) (duration of time), being entered as MM:SS, and the corresponding serializers.
 
-```
+```python
 # see examples/timedelta_serializer.py for imports
 
 # handle validating the user input
