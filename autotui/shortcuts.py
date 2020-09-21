@@ -85,11 +85,11 @@ def load_prompt_and_writeback(
     to: NamedTuple,
     path: Union[Path, str],
     attr_validators: Dict[str, AutoHandler] = {},
-    type_validators: Dict[str, AutoHandler] = {},
+    type_validators: Dict[Type, AutoHandler] = {},
     attr_serializers: Dict[str, Callable] = {},
-    type_serializers: Dict[str, Callable] = {},
+    type_serializers: Dict[Type, Callable] = {},
     attr_deserializers: Dict[str, Callable] = {},
-    type_deserializers: Dict[str, Callable] = {},
+    type_deserializers: Dict[Type, Callable] = {},
     create_file=True,
 ) -> List[NamedTuple]:
     """
