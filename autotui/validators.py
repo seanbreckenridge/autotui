@@ -20,9 +20,9 @@ dark_mode = Style.from_dict(
 
 def create_repl_prompt_str(prompt_msg: str) -> str:
     """
-    create_repl_prompt_str("give string!")
+    >>> create_repl_prompt_str("give string!")
     'give string! > '
-    create_repl_prompt_str("enter an int >")
+    >>> create_repl_prompt_str("enter an int >")
     'enter an int > '
     """
     msg = prompt_msg.strip()
