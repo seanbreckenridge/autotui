@@ -205,4 +205,3 @@ You can also take a look at the [`examples`](./examples)
 
     pip3 install 'autotui[testing]'
     pytest  # in the root directory
-    pytest --doctest-modules ./autotui
