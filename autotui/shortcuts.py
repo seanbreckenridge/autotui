@@ -19,9 +19,11 @@ from . import (
 
 
 def _normalize(_path: Union[Path, str]) -> Path:
-    p = _path
+    p = None
     if isinstance(_path, str):
         p = Path(_path)
+    else:
+        p = _path
     return p.expanduser().absolute()
 
 

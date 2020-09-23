@@ -102,7 +102,7 @@ def serialize_namedtuple(
             # TODO: wrap TypeError? if attr_value is iterable,
             # might not work as expected if attr_value is a string, and we iterate over chars
             json_dict[attr_name] = [
-                _serialize_type(x, internal_type, type_serializers, is_optional=False)
+                _serialize_type(x, internal_type, False, type_serializers)
                 for x in attr_value
             ]
         else:
@@ -171,7 +171,7 @@ def deserialize_namedtuple(
     List[<supported_types>]
     Set[<supported_types>] (Removes duplicates if any exist in the JSON list)
     """
-    sig = inspect.signature(to)
+    sig = inspect.signature(to)  # type: ignore
     # temporary to hold values, will splat into namedtuple at the end of func
     json_dict: Dict[str, Any] = {}
 
@@ -227,4 +227,4 @@ def deserialize_namedtuple(
             json_dict[attr_name] = _deserialize_type(
                 loaded_value, attr_type, is_optional, type_deserializers
             )
-    return to(**json_dict)
+    return to(**json_dict)  # type: ignore

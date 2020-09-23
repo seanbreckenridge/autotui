@@ -154,7 +154,7 @@ def namedtuple_prompt_funcs(
     #    c: str
     # >>> inspect.signature(X)
     # <Signature (a: int, b: float, c: str)>
-    sig = inspect.signature(nt)
+    sig = inspect.signature(nt)  # type: ignore
     # the dict of attribute names -> validator functions
     # to populate the namedtuple fields
     validator_map: Dict[str, Callable] = {}
@@ -229,4 +229,4 @@ def prompt_namedtuple(
     nt_values: Dict[str, Any] = {
         attr_key: attr_func() for attr_key, attr_func in funcs.items()
     }
-    return nt(**nt_values)
+    return nt(**nt_values)  # type: ignore
