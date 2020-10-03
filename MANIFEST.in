@@ -4,3 +4,4 @@ include pytest.ini
 exclude .assets/builtin_demo.gif
 recursive-include examples *.py
 recursive-exclude tests *.py
+exclude tags*
