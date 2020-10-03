@@ -1,6 +1,6 @@
 include LICENSE
 include README.md
-
-recursive-exclude * __pycache__
-recursive-exclude * *.py[co]
-recursive-exclude tests
+include pytest.ini
+exclude .assets/builtin_demo.gif
+recursive-include examples *.py
+recursive-exclude tests *.py
