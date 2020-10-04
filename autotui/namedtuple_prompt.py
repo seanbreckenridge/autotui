@@ -176,6 +176,7 @@ def namedtuple_prompt_funcs(
             )
             # check return type of callable to see if it matches expected type?
             continue
+        promptfunc: Callable = lambda: None
         if is_supported_container(attr_type):
             # check internal types to see if those are supported
             # optional is this context means maybe they dont want to add anything?
@@ -189,9 +190,7 @@ def namedtuple_prompt_funcs(
             container_type, internal_type = get_collection_types(attr_type)
 
             # TODO: pass prompt_msg from internal type to prompt another kwarg??
-            promptfunc: Callable = _get_validator(
-                internal_type, attr_name, type_validators
-            )
+            promptfunc = _get_validator(internal_type, attr_name, type_validators)
             # wrap to ask one or more times
             # wrap in container_type List/Set
             validator_map[attr_name] = _prompt_many(
@@ -204,7 +203,7 @@ def namedtuple_prompt_funcs(
             # single type, like:
             # a: int
             # b: Optional[str]
-            promptfunc: Callable = _get_validator(attr_type, attr_name, type_validators)
+            promptfunc = _get_validator(attr_type, attr_name, type_validators)
             validator_map[attr_name] = _maybe_wrap_optional(
                 attr_name, promptfunc, is_optional
             )

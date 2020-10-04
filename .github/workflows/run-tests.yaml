@@ -25,6 +25,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install .
         pip install pytest
+    - name: Run mypy tests
+      run: |
+        mypy ./autotui
     - name: Test with pytest
       run: |
         pytest

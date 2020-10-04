@@ -208,7 +208,7 @@ def prompt_optional(
 
 def prompt_wrap_error(
     func: Callable,
-    catch_errors: Optional[List[Type]] = [],
+    catch_errors: Optional[List[Type]] = None,
     for_attr: Optional[str] = None,
     prompt_msg: Optional[str] = None,
 ):
@@ -223,13 +223,15 @@ def prompt_wrap_error(
     """
     m: str = handle_prompt(func.__name__, for_attr, prompt_msg)
 
+    errors_to_catch: List[Type] = catch_errors or []
+
     class LambdaPromptValidator(Validator):
         def validate(self, document):
             text = document.text
             try:
                 func(text)
             except Exception as e:
-                for catchable in catch_errors:
+                for catchable in errors_to_catch:
                     if isinstance(e, catchable):
                         raise ValidationError(message=str(e))
                 else:
