@@ -203,5 +203,8 @@ You can also take a look at the [`examples`](./examples)
 
 # Tests
 
-    pip3 install 'autotui[testing]'
-    pytest  # in the root directory
+    git clone https://github.com/seanbreckenridge/autotui
+    cd ./autotui
+    pip install '.[testing,optional]'
+    mypy ./autotui
+    pytest

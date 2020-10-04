@@ -20,14 +20,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install package/pytest
+    - name: Install packages
       run: |
         python -m pip install --upgrade pip
-        pip install .
-        pip install pytest
-    - name: Run mypy tests
+        pip install '.[testing,optional]'
+    - name: Run mypy
       run: |
         mypy ./autotui
-    - name: Test with pytest
+    - name: Run pytest
       run: |
         pytest
