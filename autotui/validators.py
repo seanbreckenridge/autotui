@@ -1,6 +1,6 @@
 import sys
 from datetime import datetime
-from typing import Type, Optional, Callable, List, Union
+from typing import Type, Optional, Callable, List, Union, Any
 
 from prompt_toolkit import prompt
 from prompt_toolkit.validation import Validator, ValidationError
@@ -124,7 +124,7 @@ def prompt_datetime(
         return datetime.now()
     else:
         try:
-            import dateparser  # type: ignore
+            import dateparser # type: ignore[import]
         except ImportError as e:
             print(str(e))
             print(
@@ -177,16 +177,16 @@ def prompt_ask_another(
 
 
 def prompt_optional(
-    func: Callable,
+    func: Callable[[], Any],
     for_attr: Optional[str] = None,
     prompt_msg: Optional[str] = None,
     dialog_title: str = "===",
-):
+) -> Optional[Any]:
     """
     A helper to ask if the user wants to enter information for an optional.
     If the user confirms, calls func (which asks the user for input)
     """
-    m = prompt_msg
+    m: Optional[str] = prompt_msg
     if m is None:
         assert (
             for_attr is not None
@@ -207,11 +207,11 @@ def prompt_optional(
 
 
 def prompt_wrap_error(
-    func: Callable,
+    func: Callable[[str], Any],
     catch_errors: Optional[List[Type]] = None,
     for_attr: Optional[str] = None,
     prompt_msg: Optional[str] = None,
-):
+) -> Any:
     """
     Takes the prompt string, some function which takes the string the user
     is typing as input, and possible errors to catch.

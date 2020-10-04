@@ -19,6 +19,8 @@ from .typehelpers import (
     strip_optional,
     get_collection_types,
     add_to_container,
+    PrimitiveType,
+    AnyContainerType
 )
 
 from .validators import (
@@ -36,7 +38,7 @@ from .exceptions import AutoTUIException
 
 
 class AutoHandler(NamedTuple):
-    func: Callable
+    func: Callable[[str], Any]
     # if no exceptions are passed, catches no exceptions
     catch_errors: List[Type] = []
     prompt_msg: Optional[str] = None
@@ -44,7 +46,7 @@ class AutoHandler(NamedTuple):
 
 def _get_validator(
     cls: Type, attr_name: str, type_validators: Dict[Type, AutoHandler]
-) -> Callable:
+) -> Callable[[], Union[PrimitiveType, Any]]:
     """
     Gets one of the built-in validators or a type_validator from the user.
     This returns a validator for a particular type, it doesn't handle collections (List/Set)
@@ -67,18 +69,19 @@ def _get_validator(
 
 # ask first would be set if is_optional was true
 def _prompt_many(
-    attr_name: str, promptfunc: Callable, container_type: Type, ask_first: bool
-) -> Callable:
+    attr_name: str, promptfunc: Callable[[], Union[PrimitiveType, Any]], container_type: Type, ask_first: bool
+) -> Callable[[], AnyContainerType]:
     """
     A helper to prompt for an item zero or more times, for populating List/Set
     """
 
-    def pm_lambda():
+    def pm_lambda() -> AnyContainerType:
+        empty_return: AnyContainerType = container_type([])
         # do-while-esque
         if ask_first:
             if not prompt_ask_another(attr_name):
-                return container_type([])
-        ret = container_type([])
+                return empty_return
+        ret: AnyContainerType = empty_return
         continue_prompting: bool = True
         continue_ = functools.partial(
             prompt_ask_another,
@@ -96,13 +99,13 @@ def _prompt_many(
 
 
 def _maybe_wrap_optional(
-    attr_name: str, handler: Union[AutoHandler, Callable], is_optional: bool
-) -> Callable:
+    attr_name: str, handler: Union[AutoHandler, Callable[[], Any]], is_optional: bool
+) -> Callable[[], Any]:
     """
     If a NamedTuple attribute is optional, wrap it
     with a dialog asking if the user wants to enter information for it
     """
-    callf: Callable = lambda: None  # dummy value
+    callf: Callable[[], Any] = lambda: None  # dummy value
     if isinstance(
         handler, AutoHandler
     ):  # if user provided function/errors to catch for validation
@@ -117,7 +120,7 @@ def _maybe_wrap_optional(
         return lambda: prompt_optional(func=callf, for_attr=attr_name)
 
 
-def _create_callable_prompt(attr_name: str, handler: AutoHandler) -> Callable:
+def _create_callable_prompt(attr_name: str, handler: AutoHandler) -> Callable[[], Any]:
     """
     Create a callable function with the informaton from a AutoHandler
     """
@@ -133,7 +136,7 @@ def namedtuple_prompt_funcs(
     nt: NamedTuple,
     attr_validators: Dict[str, AutoHandler] = {},
     type_validators: Dict[Type, AutoHandler] = {},
-):
+) -> Dict[str, Callable[[], Any]]:
     """
     Parses the signature of a NamedTuple received from the User
 
@@ -154,10 +157,10 @@ def namedtuple_prompt_funcs(
     #    c: str
     # >>> inspect.signature(X)
     # <Signature (a: int, b: float, c: str)>
-    sig = inspect.signature(nt)  # type: ignore
+    sig = inspect.signature(nt)  # type: ignore[arg-type]
     # the dict of attribute names -> validator functions
     # to populate the namedtuple fields
-    validator_map: Dict[str, Callable] = {}
+    validator_map: Dict[str, Callable[[], Any]] = {}
 
     # example:
     # [('a', <Parameter "a: int">), ('b', <Parameter "b: float">), ('c', <Parameter "c: str">)]
@@ -176,7 +179,7 @@ def namedtuple_prompt_funcs(
             )
             # check return type of callable to see if it matches expected type?
             continue
-        promptfunc: Callable = lambda: None
+        promptfunc: Callable[[], Union[PrimitiveType, Any]] = lambda: None
         if is_supported_container(attr_type):
             # check internal types to see if those are supported
             # optional is this context means maybe they dont want to add anything?
@@ -217,15 +220,16 @@ def prompt_namedtuple(
     nt: NamedTuple,
     attr_validators: Dict[str, AutoHandler] = {},
     type_validators: Dict[Type, AutoHandler] = {},
-):
+) -> NamedTuple:
     """
     Generate the list of functions using namedtuple_prompt_funcs
     and prompt the user for each of them
     """
-    funcs: Dict[str, Callable] = namedtuple_prompt_funcs(
+
+    funcs: Dict[str, Callable[[], Any]] = namedtuple_prompt_funcs(
         nt, attr_validators, type_validators
     )
     nt_values: Dict[str, Any] = {
         attr_key: attr_func() for attr_key, attr_func in funcs.items()
     }
-    return nt(**nt_values)  # type: ignore
+    return nt(**nt_values)  # type: ignore[operator, no-any-return]

@@ -7,6 +7,7 @@ from typing import (
     Union,
     Dict,
     List,
+    Any,
 )
 
 
@@ -16,6 +17,7 @@ from . import (
     namedtuple_sequence_dumps,
     namedtuple_sequence_load,
 )
+from .typehelpers import PrimitiveType
 
 
 def _normalize(_path: Union[Path, str]) -> Path:
@@ -36,8 +38,8 @@ def _normalize(_path: Union[Path, str]) -> Path:
 def dump_to(
     items: List[NamedTuple],
     path: Union[Path, str],
-    attr_serializers: Dict[str, Callable] = {},
-    type_serializers: Dict[Type, Callable] = {},
+    attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
+    type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
 ) -> None:
     """
     Takes a list of NamedTuples (or subclasses) and a path to a file.
@@ -61,8 +63,8 @@ def dump_to(
 def load_from(
     to: NamedTuple,
     path: Union[Path, str],
-    attr_deserializers: Dict[str, Callable] = {},
-    type_deserializers: Dict[Type, Callable] = {},
+    attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
+    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
 ) -> List[NamedTuple]:
     """
     Takes a type to load and a path to a file containing JSON.
@@ -72,9 +74,9 @@ def load_from(
 
     Returns the list of items read from the file.
     """
-    p = _normalize(path)
+    p: Path = _normalize(path)
     with p.open(mode="r") as f:
-        items = namedtuple_sequence_load(
+        items: List[NamedTuple] = namedtuple_sequence_load(
             f,
             to,
             attr_deserializers=attr_deserializers,
@@ -88,11 +90,11 @@ def load_prompt_and_writeback(
     path: Union[Path, str],
     attr_validators: Dict[str, AutoHandler] = {},
     type_validators: Dict[Type, AutoHandler] = {},
-    attr_serializers: Dict[str, Callable] = {},
-    type_serializers: Dict[Type, Callable] = {},
-    attr_deserializers: Dict[str, Callable] = {},
-    type_deserializers: Dict[Type, Callable] = {},
-    create_file=True,
+    attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
+    type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
+    attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
+    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
+    create_file: bool = True,
 ) -> List[NamedTuple]:
     """
     An entry point to entire library, essentially.
@@ -107,11 +109,10 @@ def load_prompt_and_writeback(
 
     accepts validators, serializers and deserializers for each step of the process.
     """
-    p = _normalize(path)
+    p: Path = _normalize(path)
     # read from file
-    items: List[NamedTuple] = []  # default incase
     try:
-        items = load_from(to, p, attr_deserializers, type_deserializers)
+        items: List[NamedTuple] = load_from(to, p, attr_deserializers, type_deserializers) or []
     except FileNotFoundError as fne:
         if not create_file:
             raise fne

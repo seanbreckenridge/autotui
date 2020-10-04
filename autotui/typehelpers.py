@@ -16,14 +16,17 @@ PRIMITIVES = {
     datetime: Type[datetime],
 }
 
+PrimitiveType = Union[str, int, float, bool, datetime]
+
 
 CONTAINERS = {
     list: Type[List],
     set: Type[Set],
 }
 
+AnyContainerType = Union[List[Any], Set[Any]]
 
-def add_to_container(container: Union[List, Set], item: Any):
+def add_to_container(container: Union[List, Set], item: Any) -> AnyContainerType:
     if isinstance(container, list):
         container.append(item)
     elif isinstance(container, set):
@@ -35,21 +38,27 @@ def add_to_container(container: Union[List, Set], item: Any):
     return container
 
 
-def get_union_args(cls) -> Optional[Tuple[Type]]:
+def get_union_args(cls: Type) -> Optional[List[Type[Any]]]:
+    """
+    >>> get_union_args(Union[str, int])
+    [<class 'str'>, <class 'int'>]
+    >>> get_union_args(Optional[str])
+    [<class 'str'>]
+    """
     if getattr(cls, "__origin__", None) != Union:
         return None
 
-    args = cls.__args__
-    args = [e for e in args if e != type(None)]
-    assert len(args) > 0
-    return args
+    args: Type = cls.__args__
+    arg_list: List[Type] = [e for e in args if e != type(None)]
+    assert len(arg_list) > 0
+    return arg_list
 
 
 def is_union(cls):
     return get_union_args(cls) is not None
 
 
-def get_collection_types(cls) -> Tuple[Type, Type]:
+def get_collection_types(cls: Type) -> Tuple[Type, Type]:
     """
     >>> from typing import List
     >>> get_collection_types(List[int])
@@ -66,7 +75,7 @@ def get_collection_types(cls) -> Tuple[Type, Type]:
     return container_type, internal[0]
 
 
-def strip_optional(cls) -> Tuple[Type, bool]:
+def strip_optional(cls: Type) -> Tuple[Type, bool]:
     """
     >>> from typing import Optional, NamedTuple
     >>> strip_optional(Optional[int])
@@ -78,7 +87,7 @@ def strip_optional(cls) -> Tuple[Type, bool]:
     """
     is_opt: bool = False
 
-    args = get_union_args(cls)
+    args: Optional[List[Type[Any]]] = get_union_args(cls)
     if args is not None and len(args) == 1:
         cls = args[0]  # meh
         is_opt = True

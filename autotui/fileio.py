@@ -1,8 +1,8 @@
-from typing import List, Dict, Callable, Type, NamedTuple, Any
+from typing import List, Dict, Callable, Type, NamedTuple, Any, Mapping, TextIO
 
 import simplejson
 
-from .serialize import serialize_namedtuple, deserialize_namedtuple
+from .serialize import serialize_namedtuple, deserialize_namedtuple, PrimitiveType
 
 
 def _pretty_print(kwargs):
@@ -13,9 +13,9 @@ def _pretty_print(kwargs):
 
 def namedtuple_sequence_dumps(
     nt_items: List[NamedTuple],
-    attr_serializers: Dict[str, Callable] = {},
-    type_serializers: Dict[Type, Callable] = {},
-    **kwargs,
+    attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
+    type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
+    **kwargs: Mapping[str, Any],
 ) -> str:
     """
     Dump the list of namedtuples to a JSON string
@@ -30,11 +30,11 @@ def namedtuple_sequence_dumps(
 
 def namedtuple_sequence_dump(
     nt_items: List[NamedTuple],
-    fp,
-    attr_serializers: Dict[str, Callable] = {},
-    type_serializers: Dict[Type, Callable] = {},
-    **kwargs,
-):
+    fp: TextIO,
+    attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
+    type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
+    **kwargs: Mapping[str, Any],
+) -> None:
     """
     Dump the list of namedtuples to a file-like object as JSON
     Additional arguments are passed onto simplejson.dump
@@ -49,11 +49,11 @@ def namedtuple_sequence_dump(
 
 
 def namedtuple_sequence_loads(
-    nt_string,
+    nt_string: str,
     to: NamedTuple,
-    attr_deserializers: Dict[str, Callable] = {},
-    type_deserializers: Dict[Type, Callable] = {},
-    **kwargs,
+    attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
+    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
+    **kwargs: Mapping[str, Any],
 ) -> List[NamedTuple]:
     """
     Load a list of namedtuples specificed by 'to' from a JSON string
@@ -73,11 +73,11 @@ def namedtuple_sequence_loads(
 
 
 def namedtuple_sequence_load(
-    fp,
+    fp: TextIO,
     to: NamedTuple,
-    attr_deserializers: Dict[str, Callable] = {},
-    type_deserializers: Dict[Type, Callable] = {},
-    **kwargs,
+    attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
+    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
+    **kwargs: Mapping[str, Any],
 ) -> List[NamedTuple]:
     """
     Load a list of namedtuples to the namedtuple specificed by 'to'
