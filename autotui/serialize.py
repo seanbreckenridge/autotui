@@ -18,7 +18,10 @@ def _serialize_datetime(dt: datetime) -> int:
 
 
 def _serialize_type(
-    value: Any, cls: Type, is_optional: bool, type_serializers: Dict[Type, Callable[[Any], PrimitiveType]]
+    value: Any,
+    cls: Type,
+    is_optional: bool,
+    type_serializers: Dict[Type, Callable[[Any], PrimitiveType]],
 ) -> Optional[Union[PrimitiveType, Any]]:
     """
     Gets one of the built-in serializers or a type_serializers from the user,
@@ -125,7 +128,10 @@ def _deserialize_datetime(secs_since_epoch: int) -> datetime:
 
 
 def _deserialize_type(
-    value: Any, cls: Type, is_optional: bool, type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]]
+    value: Any,
+    cls: Type,
+    is_optional: bool,
+    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]],
 ) -> Optional[Union[PrimitiveType, Any]]:
     """
     Gets one of the built-in deserializers or a type_deserializers from the user,

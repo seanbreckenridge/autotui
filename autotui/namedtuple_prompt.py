@@ -20,7 +20,7 @@ from .typehelpers import (
     get_collection_types,
     add_to_container,
     PrimitiveType,
-    AnyContainerType
+    AnyContainerType,
 )
 
 from .validators import (
@@ -69,7 +69,10 @@ def _get_validator(
 
 # ask first would be set if is_optional was true
 def _prompt_many(
-    attr_name: str, promptfunc: Callable[[], Union[PrimitiveType, Any]], container_type: Type, ask_first: bool
+    attr_name: str,
+    promptfunc: Callable[[], Union[PrimitiveType, Any]],
+    container_type: Type,
+    ask_first: bool,
 ) -> Callable[[], AnyContainerType]:
     """
     A helper to prompt for an item zero or more times, for populating List/Set

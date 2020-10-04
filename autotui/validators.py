@@ -124,7 +124,7 @@ def prompt_datetime(
         return datetime.now()
     else:
         try:
-            import dateparser # type: ignore[import]
+            import dateparser  # type: ignore[import]
         except ImportError as e:
             print(str(e))
             print(

@@ -26,6 +26,7 @@ CONTAINERS = {
 
 AnyContainerType = Union[List[Any], Set[Any]]
 
+
 def add_to_container(container: Union[List, Set], item: Any) -> AnyContainerType:
     if isinstance(container, list):
         container.append(item)
