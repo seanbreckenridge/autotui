@@ -1,4 +1,4 @@
-from typing import List, Dict, Callable, Type, NamedTuple, Any, Mapping, TextIO
+from typing import List, Dict, Callable, Type, NamedTuple, Any, TextIO
 
 import simplejson
 
@@ -11,11 +11,12 @@ def _pretty_print(kwargs):
     return kwargs
 
 
+# need to types for *one* argument for **kwargs: https://stackoverflow.com/a/37032111/9348376
 def namedtuple_sequence_dumps(
     nt_items: List[NamedTuple],
     attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
     type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
-    **kwargs: Mapping[str, Any],
+    **kwargs: str,  # doesn't really matter, I arbitrary chose to specify the 'encoding' kwarg
 ) -> str:
     """
     Dump the list of namedtuples to a JSON string
@@ -33,7 +34,7 @@ def namedtuple_sequence_dump(
     fp: TextIO,
     attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
     type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
-    **kwargs: Mapping[str, Any],
+    **kwargs: str,
 ) -> None:
     """
     Dump the list of namedtuples to a file-like object as JSON
@@ -53,7 +54,7 @@ def namedtuple_sequence_loads(
     to: NamedTuple,
     attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
     type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
-    **kwargs: Mapping[str, Any],
+    **kwargs: str,
 ) -> List[NamedTuple]:
     """
     Load a list of namedtuples specificed by 'to' from a JSON string
@@ -77,7 +78,7 @@ def namedtuple_sequence_load(
     to: NamedTuple,
     attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
     type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
-    **kwargs: Mapping[str, Any],
+    **kwargs: str,
 ) -> List[NamedTuple]:
     """
     Load a list of namedtuples to the namedtuple specificed by 'to'
