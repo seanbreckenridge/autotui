@@ -21,6 +21,17 @@ Note: Doesn't support all of these recursively, see below for more info.
 
 I wrote this so that I don't have to repeatedly write boilerplate-y python code to validate/serialize/deserialize data.
 
+## Install
+
+This requires `python3.8+`, specifically for modern [`typing`](https://docs.python.org/3/library/typing.html) support.
+
+To install with pip, run:
+
+    pip install autotui
+    pip install 'autotui[optional]'  # to install dateparser, for parsing human-readable times
+
+----
+
 As an example, if I want to log whenever I drink water to a file:
 
 ```python
@@ -74,15 +85,6 @@ if __name__ == "__main__":
 ```
 
 A lot of my usage of this only ever uses 3 functions in the [`autotui.shortcuts`](https://github.com/seanbreckenridge/autotui/blob/master/autotui/shortcuts.py) module; `dump_to` to dump a sequence of my `NamedTuple`s to a file, `load_from` to do the opposite, and `load_prompt_and_writeback`, to load values in, prompt me, and write back to the file.
-
-## Installation
-
-This requires `python3.8+`, specifically for modern [`typing`](https://docs.python.org/3/library/typing.html) support.
-
-To install with pip, run:
-
-    pip install autotui
-    pip install 'autotui[optional]'  # to install dateparser, for parsing human-readable times
 
 ### Custom Types
 
