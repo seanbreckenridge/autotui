@@ -111,10 +111,9 @@ def load_prompt_and_writeback(
     """
     p: Path = _normalize(path)
     # read from file
+    items: List[NamedTuple] = []
     try:
-        items: List[NamedTuple] = (
-            load_from(to, p, attr_deserializers, type_deserializers) or []
-        )
+        items = load_from(to, p, attr_deserializers, type_deserializers)
     except FileNotFoundError as fne:
         if not create_file:
             raise fne
