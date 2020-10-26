@@ -8,14 +8,14 @@ It also wraps [`prompt_toolkit`](https://python-prompt-toolkit.readthedocs.io/en
 
 This has built-ins to prompt, validate and serialize:
 
-* `int`
-* `float`
-* `bool`
-* `str`
-* `datetime`
-* `Optional[<type>]`
-* `List[<type>]`
-* `Set[<type>]`
+- `int`
+- `float`
+- `bool`
+- `str`
+- `datetime`
+- `Optional[<type>]`
+- `List[<type>]`
+- `Set[<type>]`
 
 Note: Doesn't support all of these recursively, see below for more info.
 
@@ -30,7 +30,7 @@ To install with pip, run:
     pip install autotui
     pip install 'autotui[optional]'  # to install dateparser, for parsing human-readable times
 
-----
+---
 
 As an example, if I want to log whenever I drink water to a file:
 
@@ -56,18 +56,18 @@ Which, after running a few times, would create:
 
 ```json
 [
-    {
-        "at": 1598856786,
-        "glass_count": 2.0
-    },
-    {
-        "at": 1598856800,
-        "glass_count": 1.0
-    }
+  {
+    "at": 1598856786,
+    "glass_count": 2.0
+  },
+  {
+    "at": 1598856800,
+    "glass_count": 1.0
+  }
 ]
 ```
 
-*(datetimes are serialized into epoch time)*
+_(datetimes are serialized into epoch time)_
 
 If I want to load the values back into python, its just:
 
@@ -104,7 +104,7 @@ def _timedelta(user_input: str) -> timedelta:
     # could throw ValueError
     return timedelta(minutes=float(minutes), seconds=float(seconds))
 
- 
+
 # serializer for timedelta, converts to JSON-compatible integer
 def to_seconds(t: timedelta) -> int:
     return int(t.total_seconds())
