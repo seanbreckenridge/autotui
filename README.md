@@ -205,8 +205,10 @@ You can also take a look at the [`examples`](./examples)
 
 # Tests
 
-    git clone https://github.com/seanbreckenridge/autotui
-    cd ./autotui
-    pip install '.[testing,optional]'
-    mypy ./autotui
-    pytest
+```bash
+git clone https://github.com/seanbreckenridge/autotui
+cd ./autotui
+pip install '.[testing,optional]'
+mypy ./autotui
+pytest
+```
