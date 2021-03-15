@@ -7,9 +7,10 @@ requirements = ["simplejson>=3.17", "prompt_toolkit>=3.0"]
 with io.open("README.md", encoding="utf-8") as fo:
     long_description = fo.read()
 
+pkg = "autotui"
 setup(
-    name="autotui",
-    version="0.1.3",
+    name=pkg,
+    version="0.1.4",
     url="https://github.com/seanbreckenridge/autotui",
     author="Sean Breckenridge",
     author_email="seanbrecke@gmail.com",
@@ -17,7 +18,8 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
-    packages=find_packages(include=["autotui"]),
+    packages=find_packages(include=[pkg]),
+    package_data={pkg: ["py.typed"]},
     test_suite="tests",
     install_requires=requirements,
     python_requires=">=3.8",
