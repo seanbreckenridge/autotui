@@ -109,9 +109,8 @@ def _maybe_wrap_optional(
     with a dialog asking if the user wants to enter information for it
     """
     callf: Callable[[], Any] = lambda: None  # dummy value
-    if isinstance(
-        handler, AutoHandler
-    ):  # if user provided function/errors to catch for validation
+    # if user provided function/errors to catch for validation
+    if isinstance(handler, AutoHandler):
         callf = _create_callable_prompt(attr_name, handler)
     else:  # is already a function
         callf = handler
