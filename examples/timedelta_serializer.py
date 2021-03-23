@@ -1,12 +1,10 @@
 from typing import NamedTuple
 from datetime import timedelta
-from dataclasses import dataclass
 from autotui import (
     prompt_namedtuple,
     namedtuple_sequence_dumps,
     namedtuple_sequence_loads,
     AutoHandler,
-    namedtuple_prompt_funcs,
 )
 
 # handle validating the user input
