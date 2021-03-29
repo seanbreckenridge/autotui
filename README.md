@@ -19,7 +19,7 @@ This has built-ins to prompt, validate and serialize:
 
 Note: Doesn't support all of these recursively, see below for more info.
 
-I wrote this so that I don't have to repeatedly write boilerplate-y python code to validate/serialize/deserialize data.
+I wrote this so that I don't have to repeatedly write boilerplate-y python code to validate/serialize/deserialize data. As a more extensive example of its usage, you can see my [`tupletally`](https://github.com/seanbreckenridge/tupletally) repo, which I use to track things like calories/water etc...
 
 ## Install
 
