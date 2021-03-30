@@ -61,7 +61,7 @@ def dump_to(
 # args are slightly reordered here, comapared to json.load
 # to be consistent with dump_to
 def load_from(
-    to: NamedTuple,
+    to: Type[NamedTuple],
     path: Union[Path, str],
     attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
     type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
@@ -86,7 +86,7 @@ def load_from(
 
 
 def load_prompt_and_writeback(
-    to: NamedTuple,
+    to: Type[NamedTuple],
     path: Union[Path, str],
     attr_validators: Dict[str, AutoHandler] = {},
     type_validators: Dict[Type, AutoHandler] = {},
@@ -96,7 +96,7 @@ def load_prompt_and_writeback(
     type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
     prompt_function: Callable[
         [
-            NamedTuple,
+            Type[NamedTuple],
             Dict[str, AutoHandler],
             Dict[Type, AutoHandler],
         ],

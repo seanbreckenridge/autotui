@@ -51,7 +51,7 @@ def namedtuple_sequence_dump(
 
 def namedtuple_sequence_loads(
     nt_string: str,
-    to: NamedTuple,
+    to: Type[NamedTuple],
     attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
     type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
     **kwargs: str,
@@ -75,7 +75,7 @@ def namedtuple_sequence_loads(
 
 def namedtuple_sequence_load(
     fp: TextIO,
-    to: NamedTuple,
+    to: Type[NamedTuple],
     attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
     type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
     **kwargs: str,

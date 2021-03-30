@@ -1,5 +1,4 @@
 import warnings
-import inspect
 from typing import Dict, Type, Callable, NamedTuple, Any, Union, Optional
 from datetime import datetime, timezone
 
@@ -9,6 +8,7 @@ from .typehelpers import (
     is_primitive,
     strip_optional,
     PrimitiveType,
+    inspect_signature_dict,
 )
 
 
@@ -29,21 +29,20 @@ def _serialize_type(
     """
     if cls in type_serializers:
         return type_serializers[cls](value)
-    if is_primitive(cls):
-        if cls == datetime:
-            # serialize into epoch time
-            return _serialize_datetime(value)
+    if cls == datetime:
+        # serialize into epoch time
+        return _serialize_datetime(value)
+    elif is_primitive(cls):
+        # value can still be None here, we checked against namedtuple field type, not the dynamic
+        # type of the value given
+        if value is None:
+            if not is_optional:
+                warnings.warn(
+                    f"No value for non-optional type {value}, attempting to be serialized to {cls.__name__}"
+                )
+            return None  # serialized to null
         else:
-            # value can still be None here, we checked against namedtuple field type, not the dynamic
-            # type of the value given
-            if value is None:
-                if not is_optional:
-                    warnings.warn(
-                        f"No value for non-optional type {value}, attempting to be serialized to {cls.__name__}"
-                    )
-                return None  # serialized to null
-            else:
-                return value  # all other primitives are JSON compatible
+            return value  # all other primitives are JSON compatible
     warnings.warn(f"No known way to serialize {cls.__name__}")
     return value
     # raise? it'll fail when simplejson fails to do it anyways, so
@@ -71,10 +70,9 @@ def serialize_namedtuple(
     List[<supported_types>]
     Set[<supported_types>] (Uses a List)
     """
-    sig = inspect.signature(nt.__class__)  # type: ignore[arg-type]
     json_dict: Dict[str, Any] = {}
 
-    for attr_name, param_type in sig.parameters.items():
+    for attr_name, param_type in inspect_signature_dict(nt.__class__):
         nt_annotation = param_type.annotation
         attr_type, is_optional = strip_optional(nt_annotation)
 
@@ -139,27 +137,26 @@ def _deserialize_type(
     """
     if cls in type_deserializers:
         return type_deserializers[cls](value)
-    if is_optional and value is None:
+    elif is_optional and value is None:
         return value
-    if is_primitive(cls):
-        if cls == datetime:
-            # serialize into epoch time
-            return _deserialize_datetime(value)
-        else:
-            for expected_type in [float, int, bool, str]:
-                if cls == expected_type:
-                    if type(value) != expected_type:
-                        warnings.warn(
-                            f"For value {value}, expected type {expected_type.__name__}, found {type(value).__name__}"
-                        )
-            return value  # all other primitives are JSON compatible
+    elif cls == datetime:
+        # serialize into epoch time
+        return _deserialize_datetime(value)
+    elif is_primitive(cls):
+        for expected_type in [float, int, bool, str]:
+            if cls == expected_type:
+                if type(value) != expected_type:
+                    warnings.warn(
+                        f"For value {value}, expected type {expected_type.__name__}, found {type(value).__name__}"
+                    )
+        return value  # all other primitives are JSON compatible
     warnings.warn(f"No known way to deserialize {cls}")
     return value
 
 
 def deserialize_namedtuple(
     obj: Dict[str, Any],
-    to: NamedTuple,
+    to: Type[NamedTuple],
     attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
     type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
 ) -> NamedTuple:
@@ -178,11 +175,10 @@ def deserialize_namedtuple(
     List[<supported_types>]
     Set[<supported_types>] (Removes duplicates if any exist in the JSON list)
     """
-    sig = inspect.signature(to)  # type: ignore[arg-type]
     # temporary to hold values, will splat into namedtuple at the end of func
     json_dict: Dict[str, Any] = {}
 
-    for attr_name, param_type in sig.parameters.items():
+    for attr_name, param_type in inspect_signature_dict(to):
         nt_annotation = param_type.annotation
         attr_type, is_optional = strip_optional(nt_annotation)
 

@@ -1,14 +1,13 @@
 import functools
-import inspect
 import warnings
 from datetime import datetime
 from typing import (
     Any,
-    Type,
     Optional,
     Union,
     List,
     NamedTuple,
+    Type,
     Dict,
     Callable,
 )
@@ -21,6 +20,7 @@ from .typehelpers import (
     add_to_container,
     PrimitiveType,
     AnyContainerType,
+    inspect_signature_dict
 )
 
 from .validators import (
@@ -135,7 +135,7 @@ def _create_callable_prompt(attr_name: str, handler: AutoHandler) -> Callable[[]
 
 
 def namedtuple_prompt_funcs(
-    nt: NamedTuple,
+    nt: Type[NamedTuple],
     attr_validators: Dict[str, AutoHandler] = {},
     type_validators: Dict[Type, AutoHandler] = {},
 ) -> Dict[str, Callable[[], Any]]:
@@ -159,14 +159,13 @@ def namedtuple_prompt_funcs(
     #    c: str
     # >>> inspect.signature(X)
     # <Signature (a: int, b: float, c: str)>
-    sig = inspect.signature(nt)  # type: ignore[arg-type]
     # the dict of attribute names -> validator functions
     # to populate the namedtuple fields
     validator_map: Dict[str, Callable[[], Any]] = {}
 
     # example:
     # [('a', <Parameter "a: int">), ('b', <Parameter "b: float">), ('c', <Parameter "c: str">)]
-    for attr_name, param_type in sig.parameters.items():
+    for attr_name, param_type in inspect_signature_dict(nt):
 
         # <class 'int'>
         nt_annotation = param_type.annotation
@@ -219,7 +218,7 @@ def namedtuple_prompt_funcs(
 
 
 def prompt_namedtuple(
-    nt: NamedTuple,
+    nt: Type[NamedTuple],
     attr_validators: Dict[str, AutoHandler] = {},
     type_validators: Dict[Type, AutoHandler] = {},
 ) -> NamedTuple:

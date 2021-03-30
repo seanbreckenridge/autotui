@@ -1,7 +1,19 @@
 import typing
-
+import inspect
+from functools import lru_cache
 from datetime import datetime
-from typing import Optional, Tuple, Type, Union, List, Any, Set, Sequence
+from typing import (
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    List,
+    Any,
+    Set,
+    Sequence,
+    NamedTuple,
+    AbstractSet,
+)
 
 # A lot of these are helpers from:
 # https://github.com/karlicoss/cachew/blob/f4db4a6c6609170642c6cd09d50b52ac4c0edec9/src/cachew/__init__.py#L144
@@ -27,6 +39,11 @@ CONTAINERS = {
 AnyContainerType = Union[List[Any], Set[Any]]
 
 
+def cache(user_function):
+    'Simple lightweight unbounded cache. Sometimes called "memoize".'
+    return lru_cache(maxsize=None)(user_function)
+
+
 def add_to_container(container: Union[List, Set], item: Any) -> AnyContainerType:
     if isinstance(container, list):
         container.append(item)
@@ -39,6 +56,7 @@ def add_to_container(container: Union[List, Set], item: Any) -> AnyContainerType
     return container
 
 
+@cache
 def get_union_args(cls: Type) -> Optional[List[Type[Any]]]:
     """
     >>> get_union_args(Union[str, int])
@@ -59,6 +77,7 @@ def is_union(cls):
     return get_union_args(cls) is not None
 
 
+@cache
 def get_collection_types(cls: Type) -> Tuple[Type, Type]:
     """
     >>> from typing import List
@@ -76,9 +95,10 @@ def get_collection_types(cls: Type) -> Tuple[Type, Type]:
     return container_type, internal[0]
 
 
+@cache
 def strip_optional(cls: Type) -> Tuple[Type, bool]:
     """
-    >>> from typing import Optional, NamedTuple
+    >>> from typing import Optional
     >>> strip_optional(Optional[int])
     (<class 'int'>, True)
     >>> strip_optional(int)
@@ -129,6 +149,7 @@ def is_primitive(cls: Type) -> bool:
     return cls in PRIMITIVES
 
 
+@cache
 def is_supported_container(cls: Type) -> bool:
     """
     >>> from typing import Dict, List, Set, Tuple
@@ -142,3 +163,10 @@ def is_supported_container(cls: Type) -> bool:
     False
     """
     return strip_generic(cls) in CONTAINERS
+
+
+@cache
+def inspect_signature_dict(
+    nt: Type[NamedTuple],
+) -> AbstractSet[Tuple[str, inspect.Parameter]]:
+    return inspect.signature(nt).parameters.items()
