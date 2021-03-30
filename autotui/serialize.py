@@ -72,8 +72,7 @@ def serialize_namedtuple(
     """
     json_dict: Dict[str, Any] = {}
 
-    for attr_name, param_type in inspect_signature_dict(nt.__class__):
-        nt_annotation = param_type.annotation
+    for attr_name, nt_annotation in inspect_signature_dict(nt.__class__).items():
         attr_type, is_optional = strip_optional(nt_annotation)
 
         attr_value = getattr(nt, attr_name)
@@ -178,8 +177,7 @@ def deserialize_namedtuple(
     # temporary to hold values, will splat into namedtuple at the end of func
     json_dict: Dict[str, Any] = {}
 
-    for attr_name, param_type in inspect_signature_dict(to):
-        nt_annotation = param_type.annotation
+    for attr_name, nt_annotation in inspect_signature_dict(to).items():
         attr_type, is_optional = strip_optional(nt_annotation)
 
         # could be None

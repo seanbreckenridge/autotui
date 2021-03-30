@@ -165,10 +165,9 @@ def namedtuple_prompt_funcs(
 
     # example:
     # [('a', <Parameter "a: int">), ('b', <Parameter "b: float">), ('c', <Parameter "c: str">)]
-    for attr_name, param_type in inspect_signature_dict(nt):
+    # nt_annotation is the type
+    for attr_name, nt_annotation in inspect_signature_dict(nt).items():
 
-        # <class 'int'>
-        nt_annotation = param_type.annotation
         # (<class 'int'>, False)
         attr_type, is_optional = strip_optional(nt_annotation)
 

@@ -12,7 +12,7 @@ from typing import (
     Set,
     Sequence,
     NamedTuple,
-    AbstractSet,
+    Dict,
 )
 
 # A lot of these are helpers from:
@@ -168,5 +168,8 @@ def is_supported_container(cls: Type) -> bool:
 @cache
 def inspect_signature_dict(
     nt: Type[NamedTuple],
-) -> AbstractSet[Tuple[str, inspect.Parameter]]:
-    return inspect.signature(nt).parameters.items()
+) -> Dict[str, Type]:
+    return {
+        name: param.annotation
+        for name, param in inspect.signature(nt).parameters.items()
+    }

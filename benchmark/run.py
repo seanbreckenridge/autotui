@@ -4,7 +4,7 @@
 So that I can test how changes to the code affect the performance of the code
 """
 
-from functools import wraps
+from functools import wraps, partial
 from cProfile import run
 from pstats import SortKey
 from time import perf_counter
@@ -125,19 +125,18 @@ def complex_loads():
     )
 
 
+cProfileCumulative = partial(run, sort=SortKey.CUMULATIVE)
+
+
 def run_benchmarks() -> None:
     benchmark(typical_dumps)()
+    cProfileCumulative("typical_dumps()")
     benchmark(typical_loads)()
+    cProfileCumulative("typical_loads()")
     benchmark(complex_dumps)()
+    cProfileCumulative("complex_dumps()")
     benchmark(complex_loads)()
-    print("typical_dumps():")
-    run("typical_dumps()", sort=SortKey.CUMULATIVE)
-    print("typical_loads():")
-    run("typical_loads()", sort=SortKey.CUMULATIVE)
-    print("complex_dumps():")
-    run("complex_dumps()", sort=SortKey.CUMULATIVE)
-    print("complex_loads():")
-    run("complex_loads()", sort=SortKey.CUMULATIVE)
+    cProfileCumulative("complex_loads()")
 
 
 if __name__ == "__main__":
