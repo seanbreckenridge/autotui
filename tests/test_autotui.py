@@ -1,10 +1,10 @@
 import os
+import json
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import NamedTuple, Optional, List, Set
 
-import simplejson
 import pytest
 import autotui
 from autotui.exceptions import AutoTUIException
@@ -77,7 +77,7 @@ def test_basic_serialize():
     assert xd["b"] == 2
     assert xd["c"] == "test"
     assert xd["d"] == timestamp
-    simplejson.dumps(xd)
+    json.dumps(xd)
 
 
 def weight_serializer(weight_obj: Weight) -> float:
@@ -98,11 +98,11 @@ def test_supply_serializer_deserializer():
     assert wd["when"] == timestamp
 
     # test dumping to JSON
-    assert simplejson.dumps(wd) == '{"when": ' + str(timestamp) + ', "data": 20.0}'
+    assert json.dumps(wd) == '{"when": ' + str(timestamp) + ', "data": 20.0}'
 
     # JSON, there and back
-    w_jsonstr = simplejson.dumps(wd)
-    w_loaded = simplejson.loads(w_jsonstr)
+    w_jsonstr = json.dumps(wd)
+    w_loaded = json.loads(w_jsonstr)
     w_loaded_obj = autotui.deserialize_namedtuple(
         w_loaded, WeightData, type_deserializers={Weight: weight_deserializer}
     )
@@ -140,14 +140,14 @@ class L(NamedTuple):
 
 
 def test_basic_iterable_deserialize():
-    loaded = simplejson.loads('{"a": [1, 2, 3], "b": [true]}')
+    loaded = json.loads('{"a": [1, 2, 3], "b": [true]}')
     l = autotui.deserialize_namedtuple(loaded, L)
     l.a == [1, 2, 3]
     l.b == {True}
 
 
 def test_leave_optional_collection_none():
-    loaded = simplejson.loads('{"b": [true]}')
+    loaded = json.loads('{"b": [true]}')
     l = autotui.deserialize_namedtuple(loaded, L)
     # shouldnt warn, just serializes to None
     assert l.a == None
@@ -155,7 +155,7 @@ def test_leave_optional_collection_none():
 
 
 def test_default_value_on_non_optional_collection():
-    loaded = simplejson.loads("{}")
+    loaded = json.loads("{}")
     with pytest.warns(None) as record:
         l = autotui.deserialize_namedtuple(loaded, L)
     assert len(record) == 2
@@ -176,7 +176,7 @@ class X(NamedTuple):
 
 
 def test_expected_key_warning():
-    loaded = simplejson.loads("{}")
+    loaded = json.loads("{}")
     with pytest.warns(None) as record:
         x = autotui.deserialize_namedtuple(loaded, X)
     assert len(record) == 2
@@ -190,7 +190,7 @@ class X_OPT(NamedTuple):
 
 
 def test_optional_key_loads_with_no_warnings():
-    loaded = simplejson.loads("{}")
+    loaded = json.loads("{}")
     x = autotui.deserialize_namedtuple(loaded, X_OPT)
     assert x.a is None
 
@@ -211,14 +211,14 @@ def test_optional_specified_null_deserializer():
     # note: type_deserializers dont specify the type of the dynamically loaded value,
     # they specify the type specified by the namedtuple.
     # so cant do something like
-    # loaded = simplejson.loads("{}")
+    # loaded = json.loads("{}")
     # none_deserializer = {type(None): lambda _x: 0}
     # x = autotui.deserialize_namedtuple(loaded, X_OPT, type_deserializers=none_deserializer)
     # assert x.a == 0
     # in this case, because it expects int. The none_deserializer is never used, because
     # None is not a type on X_OPT. Could do it against int,
     # should use an attr_deserializer in this case
-    loaded = simplejson.loads('{"a": null}')
+    loaded = json.loads('{"a": null}')
     attr_deserializers = {"a": deserialize_a}
     x = autotui.deserialize_namedtuple(
         loaded, X_OPT, attr_deserializers=attr_deserializers
@@ -226,7 +226,7 @@ def test_optional_specified_null_deserializer():
     assert x.a == 0
 
     # could also do like
-    loaded = simplejson.loads('{"a": null}')
+    loaded = json.loads('{"a": null}')
     type_deserializers = {int: deserialize_a}  # specify int, not NoneType
     x = autotui.deserialize_namedtuple(
         loaded, X_OPT, type_deserializers=type_deserializers
@@ -251,7 +251,7 @@ def test_no_value_for_collection_non_optional_warning():
 
 
 def test_null_in_containers_warns():
-    loaded = simplejson.loads('{"a": [1,null,3]}')
+    loaded = json.loads('{"a": [1,null,3]}')
     with pytest.warns(None) as record:
         x = autotui.deserialize_namedtuple(loaded, LL)
     assert len(record) == 1
@@ -271,7 +271,7 @@ def test_no_way_to_serialize_warning():
 def test_basic_sequence_dumps_loads():
     x = [X(a=1), X(a=5)]
     xlist_str: str = autotui.namedtuple_sequence_dumps(x, indent=None)
-    assert xlist_str == '[{"a": 1}, {"a": 5}]'
+    assert xlist_str == """[{"a": 1}, {"a": 5}]"""
     back_to_x: List[X] = autotui.namedtuple_sequence_loads(xlist_str, to=X)
     assert type(back_to_x) == list
     assert back_to_x[0] == X(a=1)
@@ -281,7 +281,7 @@ def test_basic_sequence_dumps_loads():
 def test_doesnt_load_non_iterable():
     non_iterable = '{"a": 1}'
     with pytest.raises(TypeError) as err:
-        autotui.namedtuple_sequence_loads(non_iterable, X, indent=None)
+        autotui.namedtuple_sequence_loads(non_iterable, X)
     assert "{'a': 1} is a dict, expected a top-level list from JSON source" in str(err)
 
 
@@ -337,7 +337,7 @@ def test_custom_handles_serializers():
     ]
     with open(f.name, "w") as fp:
         autotui.namedtuple_sequence_dump(
-            readings, fp, type_serializers=type_serializers, indent=None
+            readings, fp, type_serializers=type_serializers
         )
 
     # loads first, check warning when no deserializer provided
@@ -404,7 +404,7 @@ def test_no_way_to_serialize():
     assert len(record) == 1
     assert "No known way to serialize timedelta" == str(record[0].message)
     with pytest.raises(TypeError) as te:
-        simplejson.dumps(not_serialized)
+        json.dumps(not_serialized)
     assert "Object of type timedelta is not JSON serializable" == str(te.value)
 
 

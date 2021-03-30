@@ -1,8 +1,0 @@
-include LICENSE
-include README.md
-include pytest.ini
-include mypy.ini
-exclude .assets/builtin_demo.gif
-recursive-include examples *.py
-recursive-exclude tests *.py
-exclude tags*

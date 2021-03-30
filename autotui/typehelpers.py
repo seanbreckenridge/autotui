@@ -18,7 +18,7 @@ from typing import (
 # A lot of these are helpers from:
 # https://github.com/karlicoss/cachew/blob/f4db4a6c6609170642c6cd09d50b52ac4c0edec9/src/cachew/__init__.py#L144
 
-# items that can serialized directly into JSON by simplejson.dump
+# items that can serialized directly into JSON by json.dumps
 # datetime is converted to UTC before storing
 PRIMITIVES = {
     str: Type[str],

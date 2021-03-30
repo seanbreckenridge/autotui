@@ -106,7 +106,7 @@ def benchmark(f):
 
 
 def typical_dumps():
-    namedtuple_sequence_dumps(typical_items, indent=None)
+    namedtuple_sequence_dumps(typical_items)
 
 
 def typical_loads():
@@ -115,13 +115,13 @@ def typical_loads():
 
 def complex_dumps():
     return namedtuple_sequence_dumps(
-        complex_items, indent=None, type_serializers=complex_type_serializer
+        complex_items, type_serializers=complex_type_serializer
     )
 
 
 def complex_loads():
     namedtuple_sequence_loads(
-        complex_json, Complex, indent=None, type_deserializers=complex_type_deserializer
+        complex_json, Complex, type_deserializers=complex_type_deserializer
     )
 
 

@@ -1,13 +1,13 @@
-from typing import List, Dict, Callable, Type, NamedTuple, Any, TextIO
+import json
 
-import simplejson
+from typing import List, Dict, Callable, Type, NamedTuple, Any, TextIO
 
 from .serialize import serialize_namedtuple, deserialize_namedtuple, PrimitiveType
 
 
-def _pretty_print(kwargs):
+def _pretty_print(kwargs: Dict[str, Any]) -> Dict[str, Any]:
     if "indent" not in kwargs:
-        kwargs["indent"] = 4 * " "
+        kwargs["indent"] = "    "
     return kwargs
 
 
@@ -16,17 +16,15 @@ def namedtuple_sequence_dumps(
     nt_items: List[NamedTuple],
     attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
     type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
-    **kwargs: str,  # doesn't really matter, I arbitrary chose to specify the 'encoding' kwarg
+    **kwargs: str,
 ) -> str:
     """
     Dump the list of namedtuples to a JSON string
-    Additional arguments are passed onto simplejson.dumps
     """
-    kwargs = _pretty_print(kwargs)
     s_obj: List[Dict[str, Any]] = []
     for nt in nt_items:
         s_obj.append(serialize_namedtuple(nt, attr_serializers, type_serializers))
-    return simplejson.dumps(s_obj, **kwargs)
+    return json.dumps(s_obj, **_pretty_print(kwargs))
 
 
 def namedtuple_sequence_dump(
@@ -38,15 +36,12 @@ def namedtuple_sequence_dump(
 ) -> None:
     """
     Dump the list of namedtuples to a file-like object as JSON
-    Additional arguments are passed onto simplejson.dump
     """
-    kwargs = _pretty_print(kwargs)
-    s_obj: List[Dict[str, Any]] = []
-    for nt in nt_items:
-        s_obj.append(serialize_namedtuple(nt, attr_serializers, type_serializers))
     # dump to string first, so JSON serialization errors dont cause data losses
-    nt_string: str = simplejson.dumps(s_obj, **kwargs)
-    fp.write(nt_string)
+    dumped: str = namedtuple_sequence_dumps(
+        nt_items, attr_serializers, type_serializers, **kwargs
+    )
+    fp.write(dumped)
 
 
 def namedtuple_sequence_loads(
@@ -54,13 +49,11 @@ def namedtuple_sequence_loads(
     to: Type[NamedTuple],
     attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
     type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
-    **kwargs: str,
 ) -> List[NamedTuple]:
     """
     Load a list of namedtuples specificed by 'to' from a JSON string
-    Additional arguments are passed onto simplejson.loads
     """
-    loaded_obj = simplejson.loads(nt_string)
+    loaded_obj = json.loads(nt_string)
     if not isinstance(loaded_obj, list):
         raise TypeError(
             f"{loaded_obj} is a {type(loaded_obj).__name__}, expected a top-level list from JSON source"
@@ -78,21 +71,11 @@ def namedtuple_sequence_load(
     to: Type[NamedTuple],
     attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
     type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
-    **kwargs: str,
 ) -> List[NamedTuple]:
     """
     Load a list of namedtuples to the namedtuple specificed by 'to'
     from a file-like object containing JSON
-    Additional arguments are passed onto simplejson.load
     """
-    loaded_obj = simplejson.load(fp)
-    if not isinstance(loaded_obj, list):
-        raise TypeError(
-            f"{loaded_obj} is a {type(loaded_obj).__name__}, expected a top-level list from JSON source"
-        )
-    ds_items: List[NamedTuple] = []
-    for lo in loaded_obj:
-        ds_items.append(
-            deserialize_namedtuple(lo, to, attr_deserializers, type_deserializers)
-        )
-    return ds_items
+    return namedtuple_sequence_loads(
+        fp.read(), to, attr_deserializers, type_deserializers
+    )

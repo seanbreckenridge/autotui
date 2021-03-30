@@ -45,7 +45,7 @@ def _serialize_type(
             return value  # all other primitives are JSON compatible
     warnings.warn(f"No known way to serialize {cls.__name__}")
     return value
-    # raise? it'll fail when simplejson fails to do it anyways, so
+    # raise? it'll fail when json module fails to do it anyways, so
     # might as well leave it
     # raise AutoTUIException(f"no known way to serialize {cls}")
 

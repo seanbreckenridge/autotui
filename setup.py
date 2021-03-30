@@ -1,7 +1,7 @@
 import io
 from setuptools import setup, find_packages
 
-requirements = ["simplejson>=3.17", "prompt_toolkit>=3.0"]
+requirements = ["prompt_toolkit>=3.0"]
 
 # Use the README.md content for the long description:
 with io.open("README.md", encoding="utf-8") as fo:
@@ -10,7 +10,7 @@ with io.open("README.md", encoding="utf-8") as fo:
 pkg = "autotui"
 setup(
     name=pkg,
-    version="0.1.7",
+    version="0.2.0",
     url="https://github.com/seanbreckenridge/autotui",
     author="Sean Breckenridge",
     author_email="seanbrecke@gmail.com",

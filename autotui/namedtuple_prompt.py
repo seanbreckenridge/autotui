@@ -20,7 +20,7 @@ from .typehelpers import (
     add_to_container,
     PrimitiveType,
     AnyContainerType,
-    inspect_signature_dict
+    inspect_signature_dict,
 )
 
 from .validators import (
