@@ -116,6 +116,7 @@ def strip_optional(cls: Type) -> Tuple[Type, bool]:
     return (cls, is_opt)
 
 
+@cache
 def strip_generic(tp):
     """
     >>> from typing import List
@@ -149,7 +150,6 @@ def is_primitive(cls: Type) -> bool:
     return cls in PRIMITIVES
 
 
-@cache
 def is_supported_container(cls: Type) -> bool:
     """
     >>> from typing import Dict, List, Set, Tuple

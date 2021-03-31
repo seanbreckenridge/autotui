@@ -125,7 +125,7 @@ def complex_loads():
     )
 
 
-cProfileCumulative = partial(run, sort=SortKey.CUMULATIVE)
+cProfileCumulative = partial(run, sort=SortKey.TIME)
 
 
 def run_benchmarks() -> None:
