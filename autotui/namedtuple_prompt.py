@@ -45,13 +45,31 @@ class AutoHandler(NamedTuple):
     prompt_msg: Optional[str] = None
 
 
+# wraps a value in a function with no arguments if needed,
+# else assumes the user passed a function they wanted
+# to be called, instead of prompting using prompt_toolkit
+# with the attr/type validators
+def _create_callable_for_default(value: Any) -> Callable[[], Any]:
+    if callable(value):
+        return value  # type: ignore[no-any-return]
+    else:
+        return lambda: value
+
+
 def _get_validator(
-    cls: Type, attr_name: str, type_validators: Dict[Type, AutoHandler]
+    cls: Type,
+    attr_name: str,
+    type_validators: Dict[Type, AutoHandler],
+    type_use_values: Dict[Type, Any],
 ) -> Callable[[], Union[PrimitiveType, Any]]:
     """
     Gets one of the built-in validators or a type_validator from the user.
     This returns a validator for a particular type, it doesn't handle collections (List/Set)
     """
+    if cls in type_use_values:
+        # assuming this is a custom prompt function the user wrote, or
+        # a function which returns the value to use for this
+        return _create_callable_for_default(type_use_values[cls])
     if cls in type_validators:
         return _create_callable_prompt(attr_name, type_validators[cls])
     if is_primitive(cls):
@@ -142,6 +160,8 @@ def namedtuple_prompt_funcs(
     nt: Type,
     attr_validators: Optional[Dict[str, AutoHandler]] = None,
     type_validators: Optional[Dict[Type, AutoHandler]] = None,
+    attr_use_values: Optional[Dict[str, Any]] = None,
+    type_use_values: Optional[Dict[Type, Any]] = None,
 ) -> Dict[str, Callable[[], Any]]:
     """
     Parses the signature of a NamedTuple received from the User
@@ -155,6 +175,9 @@ def namedtuple_prompt_funcs(
     attr_validators = attr_validators or {}
     type_validators = type_validators or {}
 
+    attr_use_values = attr_use_values or {}
+    type_use_values = type_use_values or {}
+
     # warn if not a subclass of a NamedTuple
     # if not isinstance(nt, NamedTuple):
     # warnings.warn(f"{nt.__name__} isn't an instance of a NamedTuple")
@@ -166,22 +189,28 @@ def namedtuple_prompt_funcs(
     #    c: str
     # >>> inspect.signature(X)
     # <Signature (a: int, b: float, c: str)>
-    # the dict of attribute names -> validator functions
+    # the dict of attribute names -> validator (prompt) functions
     # to populate the namedtuple fields
-    validator_map: Dict[str, Callable[[], Any]] = {}
+    prompt_functions: Dict[str, Callable[[], Any]] = {}
 
     # example:
     # [('a', <Parameter "a: int">), ('b', <Parameter "b: float">), ('c', <Parameter "c: str">)]
     # nt_annotation is the type
     for attr_name, nt_annotation in inspect_signature_dict(nt).items():
 
+        if attr_name in attr_use_values:
+            prompt_functions[attr_name] = _create_callable_for_default(
+                attr_use_values[attr_name]
+            )
+            continue
+
         # (<class 'int'>, False)
         attr_type, is_optional = strip_optional(nt_annotation)
 
         # if the user specified a validator for this attribute name, use that
-        if attr_name in attr_validators.keys():
+        if attr_name in attr_validators:
             handler: AutoHandler = attr_validators[attr_name]
-            validator_map[attr_name] = _maybe_wrap_optional(
+            prompt_functions[attr_name] = _maybe_wrap_optional(
                 attr_name, handler, is_optional
             )
             # check return type of callable to see if it matches expected type?
@@ -200,10 +229,12 @@ def namedtuple_prompt_funcs(
             container_type, internal_type = get_collection_types(attr_type)
 
             # TODO: pass prompt_msg from internal type to prompt another kwarg??
-            promptfunc = _get_validator(internal_type, attr_name, type_validators)
+            promptfunc = _get_validator(
+                internal_type, attr_name, type_validators, type_use_values
+            )
             # wrap to ask one or more times
             # wrap in container_type List/Set
-            validator_map[attr_name] = _prompt_many(
+            prompt_functions[attr_name] = _prompt_many(
                 attr_name, promptfunc, container_type, is_optional
             )
             # TODO: recursive container support? Though if a type is getting that complicated
@@ -213,33 +244,44 @@ def namedtuple_prompt_funcs(
             # single type, like:
             # a: int
             # b: Optional[str]
-            promptfunc = _get_validator(attr_type, attr_name, type_validators)
-            validator_map[attr_name] = _maybe_wrap_optional(
+            promptfunc = _get_validator(
+                attr_type, attr_name, type_validators, type_use_values
+            )
+            prompt_functions[attr_name] = _maybe_wrap_optional(
                 attr_name, promptfunc, is_optional
             )
     # warn if no attributes are extracted
-    if len(validator_map) == 0:
+    if len(prompt_functions) == 0:
         warnings.warn("No parameters extracted from object, may not be NamedTuple?")
-    return validator_map
+    return prompt_functions
 
 
 def prompt_namedtuple(
     nt: Type,
+    *,
     attr_validators: Optional[Dict[str, AutoHandler]] = None,
     type_validators: Optional[Dict[Type, AutoHandler]] = None,
+    attr_use_values: Optional[Dict[str, Any]] = None,
+    type_use_values: Optional[Dict[Type, Any]] = None,
 ) -> NamedTuple:
     """
     Generate the list of functions using namedtuple_prompt_funcs
     and prompt the user for each of them
+
+    attr_validators and type_validators use those functions
+    to validate while prompting interactively
+
+    attr_use_values and type_use_values let you pass default values
+    to use for some attribute/type on the NamedTuple instead of prompting. the
+    values for those can either be a function to call (if you wanted
+    write custom code to prompt the user), or just a default value
     """
 
-    attr_validators = attr_validators or {}
-    type_validators = type_validators or {}
-
     funcs: Dict[str, Callable[[], Any]] = namedtuple_prompt_funcs(
-        nt, attr_validators, type_validators
+        nt, attr_validators, type_validators, attr_use_values, type_use_values
     )
     nt_values: Dict[str, Any] = {
         attr_key: attr_func() for attr_key, attr_func in funcs.items()
     }
+    print(nt_values)
     return nt(**nt_values)  # type: ignore[operator, no-any-return]

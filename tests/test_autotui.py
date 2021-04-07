@@ -25,6 +25,21 @@ class O(NamedTuple):
     b: Optional[str] = None
 
 
+def test_default_values() -> None:
+
+    now = datetime.now()
+    current_datetime_func = lambda: now
+
+    # shouldnt prompt interactively because were setting defaults
+    val = autotui.prompt_namedtuple(
+        P,
+        attr_use_values={"a": 5, "b": 10.0},
+        type_use_values={str: "something", datetime: current_datetime_func},
+    )
+
+    assert P(a=5, b=10.0, c="something", d=now) == val
+
+
 @dataclass(init=False)
 class Weight(object):
     weight: float

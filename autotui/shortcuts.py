@@ -102,6 +102,8 @@ def load_prompt_and_writeback(
     create_file: bool = True,
     attr_validators: Optional[Dict[str, AutoHandler]] = None,
     type_validators: Optional[Dict[Type, AutoHandler]] = None,
+    attr_use_values: Optional[Dict[str, Any]] = None,
+    type_use_values: Optional[Dict[Type, Any]] = None,
     attr_serializers: Optional[Dict[str, Callable[[Any], PrimitiveType]]] = None,
     type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
     attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
@@ -135,7 +137,13 @@ def load_prompt_and_writeback(
         # warnings.warn(f"File at {p} didn't exist, using empty list")
     # prompt for the new item
     chosen_prompt_function = prompt_function or prompt_namedtuple
-    new_item: NamedTuple = chosen_prompt_function(to, attr_validators, type_validators)
+    new_item: NamedTuple = chosen_prompt_function(
+        to,
+        attr_validators=attr_validators,
+        type_validators=type_validators,
+        attr_use_values=attr_use_values,
+        type_use_values=type_use_values,
+    )
     items.append(new_item)
     # dump back to file
     dump_to(items, p, attr_serializers, type_serializers)

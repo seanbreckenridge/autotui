@@ -144,7 +144,9 @@ def _deserialize_type(
                 )
             return value  # all other primitives are JSON compatible
         elif is_namedtuple_type(cls):
-            return deserialize_namedtuple(value, to=cls, type_deserializers=type_deserializers)
+            return deserialize_namedtuple(
+                value, to=cls, type_deserializers=type_deserializers
+            )
     warnings.warn(f"No known way to deserialize {cls}")
     return value
 
@@ -153,7 +155,7 @@ def deserialize_namedtuple(
     obj: Dict[str, Any],
     to: Type,
     attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
-    type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None
+    type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None,
 ) -> NamedTuple:
     """
     Deserializes a Dict loaded from JSON into a NamedTuple object
