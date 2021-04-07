@@ -5,8 +5,6 @@ import warnings
 if sys.version_info[0] == 3 and sys.version_info[1] < 8:
     warnings.warn("autotui requires at least python3.8")
 
-import os
-
 from .validators import (
     prompt_str,
     prompt_int,

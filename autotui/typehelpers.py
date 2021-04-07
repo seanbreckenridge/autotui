@@ -28,7 +28,7 @@ PRIMITIVES = {
     datetime: Type[datetime],
 }
 
-PrimitiveType = Union[str, int, float, bool, datetime]
+PrimitiveType = Union[str, int, float, bool, datetime, dict]
 
 
 CONTAINERS = {

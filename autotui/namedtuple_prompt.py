@@ -139,9 +139,9 @@ def _create_callable_prompt(attr_name: str, handler: AutoHandler) -> Callable[[]
 
 
 def namedtuple_prompt_funcs(
-    nt: Type[NamedTuple],
-    attr_validators: Dict[str, AutoHandler] = {},
-    type_validators: Dict[Type, AutoHandler] = {},
+    nt: Type,
+    attr_validators: Optional[Dict[str, AutoHandler]] = None,
+    type_validators: Optional[Dict[Type, AutoHandler]] = None,
 ) -> Dict[str, Callable[[], Any]]:
     """
     Parses the signature of a NamedTuple received from the User
@@ -151,6 +151,9 @@ def namedtuple_prompt_funcs(
 
     Else, prints an error and fails
     """
+
+    attr_validators = attr_validators or {}
+    type_validators = type_validators or {}
 
     # warn if not a subclass of a NamedTuple
     # if not isinstance(nt, NamedTuple):
@@ -221,14 +224,17 @@ def namedtuple_prompt_funcs(
 
 
 def prompt_namedtuple(
-    nt: Type[NamedTuple],
-    attr_validators: Dict[str, AutoHandler] = {},
-    type_validators: Dict[Type, AutoHandler] = {},
+    nt: Type,
+    attr_validators: Optional[Dict[str, AutoHandler]] = None,
+    type_validators: Optional[Dict[Type, AutoHandler]] = None,
 ) -> NamedTuple:
     """
     Generate the list of functions using namedtuple_prompt_funcs
     and prompt the user for each of them
     """
+
+    attr_validators = attr_validators or {}
+    type_validators = type_validators or {}
 
     funcs: Dict[str, Callable[[], Any]] = namedtuple_prompt_funcs(
         nt, attr_validators, type_validators

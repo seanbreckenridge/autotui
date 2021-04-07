@@ -153,14 +153,14 @@ def test_is_namedtuple() -> None:
 
 def test_basic_iterable_deserialize() -> None:
     loaded: Json = json.loads('{"a": [1, 2, 3], "b": [true]}')
-    l: L = autotui.deserialize_namedtuple(loaded, L)
+    l = autotui.deserialize_namedtuple(loaded, L)
     l.a == [1, 2, 3]
     l.b == {True}
 
 
 def test_leave_optional_collection_none() -> None:
     loaded: Json = json.loads('{"b": [true]}')
-    l: L = autotui.deserialize_namedtuple(loaded, L)
+    l = autotui.deserialize_namedtuple(loaded, L)
     # shouldnt warn, just serializes to None
     assert l.a == None
     assert l.b == {True}

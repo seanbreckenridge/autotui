@@ -57,24 +57,18 @@ def _serialize_type(
 
 def serialize_namedtuple(
     nt: NamedTuple,
-    attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
-    type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
+    attr_serializers: Optional[Dict[str, Callable[[Any], PrimitiveType]]] = None,
+    type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
 ) -> Dict[str, Any]:
     """
-    Serializes a List of NamedTuples to a JSON-compatible dictionary
+    Serializes a NamedTuples to a JSON-compatible dictionary
 
     If the user provides attr_serializers or type_serializers, uses those
     instead of the defaults.
-
-    by default, supports:
-    int
-    float
-    str
-    datetime (converts to epoch time)
-    Optional[<supported_types>]
-    List[<supported_types>]
-    Set[<supported_types>] (Uses a List)
     """
+    attr_serializers = attr_serializers or {}
+    type_serializers = type_serializers or {}
+
     json_dict: Dict[str, Any] = {}
 
     for attr_name, nt_annotation in inspect_signature_dict(nt.__class__).items():
@@ -157,25 +151,19 @@ def _deserialize_type(
 
 def deserialize_namedtuple(
     obj: Dict[str, Any],
-    to: Type[NamedTuple],
-    attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
-    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
+    to: Type,
+    attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
+    type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None
 ) -> NamedTuple:
     """
     Deserializes a Dict loaded from JSON into a NamedTuple object
 
     If the user provides attr_deserializers or type_deserializers, uses those
     instead of the defaults.
-
-    by default, supports:
-    int
-    float
-    str
-    datetime (converts to from epoch seconds to UTC)
-    Optional[<supported_types>]
-    List[<supported_types>]
-    Set[<supported_types>] (Removes duplicates if any exist in the JSON list)
     """
+    attr_deserializers = attr_deserializers or {}
+    type_deserializers = type_deserializers or {}
+
     # temporary to hold values, will splat into namedtuple at the end of func
     json_dict: Dict[str, Any] = {}
 

@@ -1,6 +1,6 @@
 import json
 
-from typing import List, Dict, Callable, Type, NamedTuple, Any, TextIO
+from typing import List, Dict, Callable, Type, NamedTuple, Any, TextIO, Optional
 
 from .serialize import serialize_namedtuple, deserialize_namedtuple, PrimitiveType
 
@@ -14,8 +14,8 @@ def _pretty_print(kwargs: Dict[str, Any]) -> Dict[str, Any]:
 # need to types for *one* argument for **kwargs: https://stackoverflow.com/a/37032111/9348376
 def namedtuple_sequence_dumps(
     nt_items: List[NamedTuple],
-    attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
-    type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
+    attr_serializers: Optional[Dict[str, Callable[[Any], PrimitiveType]]] = None,
+    type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
     **kwargs: str,
 ) -> str:
     """
@@ -30,8 +30,8 @@ def namedtuple_sequence_dumps(
 def namedtuple_sequence_dump(
     nt_items: List[NamedTuple],
     fp: TextIO,
-    attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
-    type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
+    attr_serializers: Optional[Dict[str, Callable[[Any], PrimitiveType]]] = None,
+    type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
     **kwargs: str,
 ) -> None:
     """
@@ -46,9 +46,9 @@ def namedtuple_sequence_dump(
 
 def namedtuple_sequence_loads(
     nt_string: str,
-    to: Type[NamedTuple],
-    attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
-    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
+    to: Type,
+    attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
+    type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None,
 ) -> List[NamedTuple]:
     """
     Load a list of namedtuples specificed by 'to' from a JSON string
@@ -68,9 +68,9 @@ def namedtuple_sequence_loads(
 
 def namedtuple_sequence_load(
     fp: TextIO,
-    to: Type[NamedTuple],
-    attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
-    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
+    to: Type,
+    attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
+    type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None,
 ) -> List[NamedTuple]:
     """
     Load a list of namedtuples to the namedtuple specificed by 'to'

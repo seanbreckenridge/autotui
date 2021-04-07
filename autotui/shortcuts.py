@@ -1,4 +1,3 @@
-import warnings
 from pathlib import Path
 from typing import (
     Callable,
@@ -8,6 +7,7 @@ from typing import (
     Dict,
     List,
     Any,
+    Optional,
 )
 
 
@@ -21,7 +21,7 @@ from .typehelpers import PrimitiveType
 
 
 def _normalize(_path: Union[Path, str]) -> Path:
-    p = None
+    p: Path
     if isinstance(_path, str):
         p = Path(_path)
     else:
@@ -38,8 +38,8 @@ def _normalize(_path: Union[Path, str]) -> Path:
 def dump_to(
     items: List[NamedTuple],
     path: Union[Path, str],
-    attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
-    type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
+    attr_serializers: Optional[Dict[str, Callable[[Any], PrimitiveType]]] = None,
+    type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
 ) -> None:
     """
     Takes a list of NamedTuples (or subclasses) and a path to a file.
@@ -61,10 +61,11 @@ def dump_to(
 # args are slightly reordered here, comapared to json.load
 # to be consistent with dump_to
 def load_from(
-    to: Type[NamedTuple],
+    to: Type,
     path: Union[Path, str],
-    attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
-    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
+    attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
+    type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None,
+    allow_empty: bool = False,
 ) -> List[NamedTuple]:
     """
     Takes a type to load and a path to a file containing JSON.
@@ -72,37 +73,40 @@ def load_from(
     using the attr_deserializers and type_deserializers to handle
     custom types if specified.
 
+    If allow_empty is True, this returns an empty list if the file
+    didn't exist
+
     Returns the list of items read from the file.
     """
     p: Path = _normalize(path)
-    with p.open(mode="r") as f:
-        items: List[NamedTuple] = namedtuple_sequence_load(
-            f,
-            to,
-            attr_deserializers=attr_deserializers,
-            type_deserializers=type_deserializers,
-        )
+    try:
+        with p.open(mode="r") as f:
+            items: List[NamedTuple] = namedtuple_sequence_load(
+                f,
+                to,
+                attr_deserializers=attr_deserializers,
+                type_deserializers=type_deserializers,
+            )
+    except FileNotFoundError as fne:
+        if allow_empty:
+            return []
+        else:
+            raise fne
     return items
 
 
 def load_prompt_and_writeback(
-    to: Type[NamedTuple],
+    to: Type,
     path: Union[Path, str],
-    attr_validators: Dict[str, AutoHandler] = {},
-    type_validators: Dict[Type, AutoHandler] = {},
-    attr_serializers: Dict[str, Callable[[Any], PrimitiveType]] = {},
-    type_serializers: Dict[Type, Callable[[Any], PrimitiveType]] = {},
-    attr_deserializers: Dict[str, Callable[[PrimitiveType], Any]] = {},
-    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]] = {},
-    prompt_function: Callable[
-        [
-            Type[NamedTuple],
-            Dict[str, AutoHandler],
-            Dict[Type, AutoHandler],
-        ],
-        NamedTuple,
-    ] = prompt_namedtuple,
+    *,
     create_file: bool = True,
+    attr_validators: Optional[Dict[str, AutoHandler]] = None,
+    type_validators: Optional[Dict[Type, AutoHandler]] = None,
+    attr_serializers: Optional[Dict[str, Callable[[Any], PrimitiveType]]] = None,
+    type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
+    attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
+    type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None,
+    prompt_function: Optional[Callable[..., NamedTuple]] = None,
 ) -> List[NamedTuple]:
     """
     An entry point to entire library, essentially.
@@ -128,9 +132,10 @@ def load_prompt_and_writeback(
     except FileNotFoundError as fne:
         if not create_file:
             raise fne
-        warnings.warn(f"File at {p} didn't exist, using empty list")
+        # warnings.warn(f"File at {p} didn't exist, using empty list")
     # prompt for the new item
-    new_item: NamedTuple = prompt_function(to, attr_validators, type_validators)
+    chosen_prompt_function = prompt_function or prompt_namedtuple
+    new_item: NamedTuple = chosen_prompt_function(to, attr_validators, type_validators)
     items.append(new_item)
     # dump back to file
     dump_to(items, p, attr_serializers, type_serializers)
