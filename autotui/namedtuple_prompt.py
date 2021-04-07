@@ -21,6 +21,7 @@ from .typehelpers import (
     PrimitiveType,
     AnyContainerType,
     inspect_signature_dict,
+    is_namedtuple_type,
 )
 
 from .validators import (
@@ -64,6 +65,9 @@ def _get_validator(
             return lambda: prompt_bool(attr_name)
         elif cls == datetime:
             return lambda: prompt_datetime(attr_name)
+    # if this is another NamedTuple, call prompt_namedtuple recursively
+    if is_namedtuple_type(cls):
+        return lambda: prompt_namedtuple(cls, type_validators=type_validators)
     raise AutoTUIException(f"no way to handle prompting {cls.__name__}")
 
 

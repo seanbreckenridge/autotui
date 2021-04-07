@@ -3,12 +3,14 @@ import json
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import NamedTuple, Optional, List, Set
+from typing import NamedTuple, Optional, List, Set, Dict, Any
 
 import pytest
 import autotui
 from autotui.exceptions import AutoTUIException
 from autotui.shortcuts import load_from, dump_to
+
+Json = Dict[str, Any]
 
 
 class P(NamedTuple):
@@ -101,9 +103,9 @@ def test_supply_serializer_deserializer():
     assert json.dumps(wd) == '{"when": ' + str(timestamp) + ', "data": 20.0}'
 
     # JSON, there and back
-    w_jsonstr = json.dumps(wd)
-    w_loaded = json.loads(w_jsonstr)
-    w_loaded_obj = autotui.deserialize_namedtuple(
+    w_jsonstr: str = json.dumps(wd)
+    w_loaded: Json = json.loads(w_jsonstr)
+    w_loaded_obj: Json = autotui.deserialize_namedtuple(
         w_loaded, WeightData, type_deserializers={Weight: weight_deserializer}
     )
     assert int(w_loaded_obj.when.timestamp()) == timestamp
@@ -139,23 +141,33 @@ class L(NamedTuple):
     b: Set[bool]
 
 
-def test_basic_iterable_deserialize():
-    loaded = json.loads('{"a": [1, 2, 3], "b": [true]}')
-    l = autotui.deserialize_namedtuple(loaded, L)
+def test_is_namedtuple() -> None:
+    from autotui.typehelpers import is_namedtuple_type, is_namedtuple_obj
+
+    l = L(a=[], b=set())
+    assert is_namedtuple_obj(l)
+    assert is_namedtuple_type(L)
+    assert not is_namedtuple_obj([5])
+    assert not is_namedtuple_type(int)
+
+
+def test_basic_iterable_deserialize() -> None:
+    loaded: Json = json.loads('{"a": [1, 2, 3], "b": [true]}')
+    l: L = autotui.deserialize_namedtuple(loaded, L)
     l.a == [1, 2, 3]
     l.b == {True}
 
 
-def test_leave_optional_collection_none():
-    loaded = json.loads('{"b": [true]}')
-    l = autotui.deserialize_namedtuple(loaded, L)
+def test_leave_optional_collection_none() -> None:
+    loaded: Json = json.loads('{"b": [true]}')
+    l: L = autotui.deserialize_namedtuple(loaded, L)
     # shouldnt warn, just serializes to None
     assert l.a == None
     assert l.b == {True}
 
 
 def test_default_value_on_non_optional_collection():
-    loaded = json.loads("{}")
+    loaded: Json = json.loads("{}")
     with pytest.warns(None) as record:
         l = autotui.deserialize_namedtuple(loaded, L)
     assert len(record) == 2
@@ -197,7 +209,7 @@ def test_optional_key_loads_with_no_warnings():
 
 # this is a way to handle serializing null types into
 # some default value
-def deserialize_a(x: Optional[int]):
+def deserialize_a(x: Optional[int]) -> int:
     if x is None:
         return 0
     else:
@@ -283,6 +295,27 @@ def test_doesnt_load_non_iterable():
     with pytest.raises(TypeError) as err:
         autotui.namedtuple_sequence_loads(non_iterable, X)
     assert "{'a': 1} is a dict, expected a top-level list from JSON source" in str(err)
+
+
+class Internal(NamedTuple):
+    x: int
+
+
+class Wrapper(NamedTuple):
+    y: int
+    z: Internal
+
+
+def test_recursive():
+    obj = Wrapper(y=5, z=Internal(x=10))
+    [dumped_obj] = json.loads(autotui.namedtuple_sequence_dumps([obj]))
+    assert dumped_obj["y"] == 5
+    assert type(dumped_obj["z"]) == dict
+    assert dumped_obj["z"]["x"] == 10
+
+    # dump to JSON and re-load
+    [reloaded] = autotui.namedtuple_sequence_loads(json.dumps([dumped_obj]), to=Wrapper)
+    assert obj == reloaded
 
 
 @dataclass(init=False)

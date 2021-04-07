@@ -16,8 +16,7 @@ This has built-ins to prompt, validate and serialize:
 - `Optional[<type>]`
 - `List[<type>]`
 - `Set[<type>]`
-
-Note: Doesn't support all of these recursively, see below for more info.
+- other `NamedTuple`s (recursively)
 
 I wrote this so that I don't have to repeatedly write boilerplate-y python code to validate/serialize/deserialize data. As a more extensive example of its usage, you can see my [`tupletally`](https://github.com/seanbreckenridge/tupletally) repo, which I use to track things like calories/water etc...
 
@@ -88,14 +87,14 @@ A lot of my usage of this only ever uses 3 functions in the [`autotui.shortcuts`
 
 ### Custom Types
 
-If your [algebraic data type](https://en.wikipedia.org/wiki/Algebraic_data_type) is getting too complicated and `autotui` can't parse it, you can always specify another `NamedTuple` or type, and pass a `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.
+If you want to support custom types, or specify a special way to serialize another NamedTuple recursively, you can specify `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.
 
 As a more complicated example, heres a validator for [`timedelta`](https://docs.python.org/3.8/library/datetime.html#datetime.timedelta) (duration of time), being entered as MM:SS, and the corresponding serializers.
 
 ```python
 # see examples/timedelta_serializer.py for imports
 
-# handle validating the user input
+# handle validating the user input interactively
 # can throw a ValueError
 def _timedelta(user_input: str) -> timedelta:
     if len(user_input.strip()) == 0:

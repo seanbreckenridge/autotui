@@ -9,6 +9,7 @@ from .typehelpers import (
     strip_optional,
     PrimitiveType,
     inspect_signature_dict,
+    is_namedtuple_type,
 )
 
 
@@ -32,17 +33,21 @@ def _serialize_type(
     if cls == datetime:
         # serialize into epoch time
         return _serialize_datetime(value)
-    elif is_primitive(cls):
-        # value can still be None here, we checked against namedtuple field type, not the dynamic
-        # type of the value given
-        if value is None:
-            if not is_optional:
-                warnings.warn(
-                    f"No value for non-optional type {value}, attempting to be serialized to {cls.__name__}"
-                )
-            return None  # serialized to null
-        else:
+    # value can still be None here, we checked against namedtuple field type, not the dynamic
+    # type of the value given
+    if value is None:
+        if not is_optional:
+            warnings.warn(
+                f"No value for non-optional type {value}, attempting to be serialized to {cls.__name__}"
+            )
+        return None  # serialized to null
+    else:
+        if is_primitive(cls):
             return value  # all other primitives are JSON compatible
+        elif is_namedtuple_type(cls):
+            # if the attribute for this value is another NamedTuple,
+            # recursively serialize the value
+            return serialize_namedtuple(value, type_serializers=type_serializers)
     warnings.warn(f"No known way to serialize {cls.__name__}")
     return value
     # raise? it'll fail when json module fails to do it anyways, so
@@ -120,10 +125,6 @@ def serialize_namedtuple(
     return json_dict
 
 
-def _deserialize_datetime(secs_since_epoch: int) -> datetime:
-    return datetime.fromtimestamp(secs_since_epoch, timezone.utc)
-
-
 def _deserialize_type(
     value: Any,
     cls: Type,
@@ -140,15 +141,16 @@ def _deserialize_type(
         return value
     elif cls == datetime:
         # serialize into epoch time
-        return _deserialize_datetime(value)
-    elif is_primitive(cls):
-        for expected_type in [float, int, bool, str]:
-            if cls == expected_type:
-                if type(value) != expected_type:
-                    warnings.warn(
-                        f"For value {value}, expected type {expected_type.__name__}, found {type(value).__name__}"
-                    )
-        return value  # all other primitives are JSON compatible
+        return datetime.fromtimestamp(value, timezone.utc)
+    else:
+        if is_primitive(cls):
+            if type(value) != cls:
+                warnings.warn(
+                    f"For value {value}, expected type {cls.__name__}, found {type(value).__name__}"
+                )
+            return value  # all other primitives are JSON compatible
+        elif is_namedtuple_type(cls):
+            return deserialize_namedtuple(value, to=cls, type_deserializers=type_deserializers)
     warnings.warn(f"No known way to deserialize {cls}")
     return value
 

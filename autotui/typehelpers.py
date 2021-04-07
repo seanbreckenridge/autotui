@@ -73,7 +73,22 @@ def get_union_args(cls: Type) -> Optional[List[Type[Any]]]:
     return arg_list
 
 
-def is_union(cls):
+# an estimation, someone could always trick
+# this if they really wanted to...
+# this should be passed the NamedTuple object,
+# not a class type
+def is_namedtuple_obj(thing: Any) -> bool:
+    _asdict = getattr(thing, "_asdict", None)
+    return _asdict is not None and callable(_asdict)
+
+
+# this should be passed a NamedTuple type (typically
+# created with class(NamedTuple), not an instance
+def is_namedtuple_type(thing: Type) -> bool:
+    return hasattr(thing, "_fields") and issubclass(thing, tuple) and callable(thing)
+
+
+def is_union(cls: Type) -> bool:
     return get_union_args(cls) is not None
 
 
