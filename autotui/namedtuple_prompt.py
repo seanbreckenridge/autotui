@@ -283,5 +283,4 @@ def prompt_namedtuple(
     nt_values: Dict[str, Any] = {
         attr_key: attr_func() for attr_key, attr_func in funcs.items()
     }
-    print(nt_values)
     return nt(**nt_values)  # type: ignore[operator, no-any-return]
