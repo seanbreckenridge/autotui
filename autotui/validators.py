@@ -1,6 +1,7 @@
 import sys
+import os
 from datetime import datetime
-from typing import Type, Optional, Callable, List, Union, Any, TYPE_CHECKING
+from typing import Type, Optional, Callable, List, Union, Any, TYPE_CHECKING, Dict
 from functools import lru_cache
 
 
@@ -35,7 +36,7 @@ def create_repl_prompt_str(prompt_msg: str) -> str:
 
 
 # handles the repetitive task of validating passed kwargs for prompt string for attrs
-def handle_prompt(
+def create_prompt_string(
     for_type: Union[str, Type], for_attr: Optional[str], prompt_msg: Optional[str]
 ) -> str:
     # if user supplied one, use that
@@ -53,7 +54,7 @@ def handle_prompt(
 def prompt_str(for_attr: Optional[str] = None, prompt_msg: Optional[str] = None) -> str:
     from prompt_toolkit import prompt
 
-    m: str = handle_prompt(str, for_attr, prompt_msg)
+    m: str = create_prompt_string(str, for_attr, prompt_msg)
     return prompt(m)
 
 
@@ -72,10 +73,10 @@ def prompt_str(for_attr: Optional[str] = None, prompt_msg: Optional[str] = None)
 @lru_cache(maxsize=1)
 def IntValidator() -> Type["Validator"]:
 
-    from prompt_toolkit.validation import Validator, ValidationError
+    from prompt_toolkit.validation import Validator, ValidationError, Document
 
     class _IntValidator(Validator):
-        def validate(self, document):
+        def validate(self, document: Document) -> None:
             text = document.text
             try:
                 int(text)
@@ -88,7 +89,7 @@ def IntValidator() -> Type["Validator"]:
 def prompt_int(for_attr: Optional[str] = None, prompt_msg: Optional[str] = None) -> int:
     from prompt_toolkit import prompt
 
-    m: str = handle_prompt(int, for_attr, prompt_msg)
+    m: str = create_prompt_string(int, for_attr, prompt_msg)
     return int(prompt(m, validator=IntValidator()()))
 
 
@@ -98,10 +99,10 @@ def prompt_int(for_attr: Optional[str] = None, prompt_msg: Optional[str] = None)
 @lru_cache(maxsize=1)
 def FloatValidator() -> Type["Validator"]:
 
-    from prompt_toolkit.validation import Validator, ValidationError
+    from prompt_toolkit.validation import Validator, ValidationError, Document
 
     class _FloatValidator(Validator):
-        def validate(self, document):
+        def validate(self, document: Document) -> None:
             text = document.text
             try:
                 float(text)
@@ -116,7 +117,7 @@ def prompt_float(
 ) -> float:
     from prompt_toolkit import prompt
 
-    m: str = handle_prompt(float, for_attr, prompt_msg)
+    m: str = create_prompt_string(float, for_attr, prompt_msg)
     return float(prompt(m, validator=FloatValidator()()))
 
 
@@ -130,7 +131,7 @@ def prompt_bool(
 ) -> bool:
     from prompt_toolkit.shortcuts import button_dialog
 
-    m: str = handle_prompt(bool, for_attr, prompt_msg)
+    m: str = create_prompt_string(bool, for_attr, prompt_msg)
     return button_dialog(
         title=dialog_title,
         text=m,
@@ -141,41 +142,123 @@ def prompt_bool(
 
 ## DATETIME
 
+from abc import ABCMeta
+
+DatetimeParserFunc = Callable[[str], Optional[datetime]]
+if TYPE_CHECKING:
+    # to define a stub class for AUTOTUI_DATETIME_LIVE
+
+    from prompt_toolkit.validation import Validator, Document
+
+    class AbstractDatetimeValidator(ABCMeta, Validator):
+        def __init__(
+            self,
+            dtstate: Dict[str, Any],
+            parser_func: DatetimeParserFunc,
+        ):
+            self.parser_func = parser_func
+            self.dtstate = dtstate
+
+        def validator(self, document: Document) -> None:
+            raise NotImplementedError
+
+        def toolbar(self) -> str:
+            raise NotImplementedError
+
+
+@lru_cache(maxsize=1)
+def LiveDatetimeValidator() -> Type["AbstractDatetimeValidator"]:
+
+    from prompt_toolkit.validation import Validator, ValidationError, Document
+
+    class _LiveDatetimeValidator(Validator):
+        def __init__(
+            self,
+            *,
+            dtstate: Dict[str, Any],
+            parser_func: DatetimeParserFunc,
+        ):
+            """
+            dtstate is a dictionary shared between the validator and bottom
+            toolbar to display the parsed datetime result -- it should never
+            be re-assigned to a different object, only modified
+            """
+            super().__init__()
+            self.parser_func = parser_func
+            self.dtstate = dtstate
+
+            # defaults
+            self.dtstate["text"] = ""
+            self.dtstate["parsed"] = None
+
+        def validate(self, document: Document) -> None:
+            text = document.text.strip().lower()
+            self.dtstate["text"] = text
+            self.dtstate["parsed"] = None  # reset so previous results dont stay
+            if len(text) == 0:
+                raise ValidationError(message="Not enough input...")
+            val: Optional[datetime] = self.parser_func(text)
+            if val is None:
+                raise ValidationError(message=f"Couldn't parse {text} into a datetime")
+            else:
+                self.dtstate["parsed"] = val
+
+        def toolbar(self) -> str:
+            result = "..."
+            if len(self.dtstate["text"]) == 0:
+                return result
+            parsed = self.dtstate["parsed"]
+            if parsed is not None:
+                result = str(parsed)
+            else:
+                result = "Couldn't parse..."
+            return result
+
+    # darn - cant typing.cast or subclass the ABC class here, just have to ignore
+    return _LiveDatetimeValidator  # type: ignore
+
 
 def prompt_datetime(
     for_attr: Optional[str] = None,
     prompt_msg: Optional[str] = None,
 ) -> datetime:
+    from prompt_toolkit import prompt
+    from prompt_toolkit.validation import Validator
     from prompt_toolkit.shortcuts import button_dialog, input_dialog, message_dialog
 
-    m: str = handle_prompt(datetime, for_attr, prompt_msg)
-    use_current_time = button_dialog(
-        title="How to pick date?",
-        text=m,
-        buttons=[("Now", True), ("Describe", False)],
-        style=dark_mode(),
-    ).run()
-    if use_current_time:
-        return datetime.now()
+    m: str = create_prompt_string(datetime, for_attr, prompt_msg)
+    try:
+        import dateparser  # type: ignore[import]
+    except ImportError as e:
+        print("Could not import 'dateparser'")
+        print("'pip3 install dateparser' to be able to parse date strings")
+        print(str(e))
+        sys.exit(1)
+
+    # can cause lag on slower machines because of the constant
+    # recomputes - put it behind a envvar-enabled feature
+    if "AUTOTUI_DATETIME_LIVE" in os.environ:
+        state: Dict[str, Any] = {}
+        validator = LiveDatetimeValidator()(dtstate=state, parser_func=dateparser.parse)
+        toolbar_func: Callable[[], str] = validator.toolbar
+        resp = prompt(m, validator=validator, bottom_toolbar=toolbar_func)
+        dt = state["parsed"]
+        assert isinstance(dt, datetime)
+        return dt
     else:
-        try:
-            import dateparser  # type: ignore[import]
-        except ImportError as e:
-            print(str(e))
-            print(
-                "Could not find dateparser module, run 'pip3 install dateparser' to be able to parse date strings"
-            )
-            sys.exit(1)
         parsed_time: Optional[datetime] = None
         while parsed_time is None:
             time_str: Optional[str] = input_dialog(
                 title="Describe the datetime:",
-                text="For example:\n'2 hours ago', 'noon', 'tomorrow at 10PM', 'may 30th at 8PM'",
+                text="For example:\n'now', '2 hours ago', 'noon', 'tomorrow at 10PM', 'may 30th at 8PM'",
                 style=dark_mode(),
             ).run()
             if time_str is None:
-                print("Cancelled, using current time...")
-                return datetime.now()
+                # hmm -- is this dangerous? user is prompting, so unless they've left the file
+                # open this should be fine. everything in shortcuts.py is atomic-like
+                # on purpose so this doesnt run into a problem there
+                print("Cancelled, exiting...")
+                sys.exit(1)
             parsed_time = dateparser.parse(time_str)
             if parsed_time is None:
                 message_dialog(
@@ -261,14 +344,14 @@ def prompt_wrap_error(
     but it allows you to specify the error message from the callable instead.
     """
     from prompt_toolkit import prompt
-    from prompt_toolkit.validation import Validator, ValidationError
+    from prompt_toolkit.validation import Validator, ValidationError, Document
 
-    m: str = handle_prompt(func.__name__, for_attr, prompt_msg)
+    m: str = create_prompt_string(func.__name__, for_attr, prompt_msg)
 
     errors_to_catch: List[Type] = catch_errors or []
 
     class LambdaPromptValidator(Validator):
-        def validate(self, document):
+        def validate(self, document: Document) -> None:
             text = document.text
             try:
                 func(text)
@@ -281,7 +364,3 @@ def prompt_wrap_error(
                     raise e
 
     return func(prompt(m, validator=LambdaPromptValidator()))
-
-
-if TYPE_CHECKING:
-    from prompt_toolkit.validation import Validator

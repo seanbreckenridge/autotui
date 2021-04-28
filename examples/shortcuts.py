@@ -11,7 +11,6 @@ class Water(NamedTuple):
     per_glass_ml: float
 
 
-
 def main():
     load_prompt_and_writeback(Water, "~/.local/share/water.json")
     load_prompt_and_writeback(Water, "~/.local/share/water.json")

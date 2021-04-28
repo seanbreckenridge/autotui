@@ -85,6 +85,37 @@ if __name__ == "__main__":
 
 A lot of my usage of this only ever uses 3 functions in the [`autotui.shortcuts`](https://github.com/seanbreckenridge/autotui/blob/master/autotui/shortcuts.py) module; `dump_to` to dump a sequence of my `NamedTuple`s to a file, `load_from` to do the opposite, and `load_prompt_and_writeback`, to load values in, prompt me, and write back to the file.
 
+#### Datetime prompt
+
+There are two version of the datetime prompt
+
+- The one you see above using a dialog
+- A live version which displays the parsed datetime while typing. Since that can cause some lag, it can be enabled by setting the `AUTOTUI_DATETIME_LIVE` environment variable, e.g., add `export AUTOTUI_DATETIME_LIVE=1` to your `.bashrc`/`.zshrc`
+
+### Partial prompts
+
+If you want to prompt for only a few fields, you can supply the `attr_use_values` or `type_use_values` to supply default values:
+
+```python
+# water-now script -- set any datetime values to now
+from datetime import datetime
+from typing import NamedTuple
+
+from autotui import prompt_namedtuple
+from autotui.shortcuts import load_prompt_and_writeback
+
+class Water(NamedTuple):
+    at: datetime
+    glass_count: float
+
+load_prompt_and_writeback(Water, "./water.json", type_use_values={datetime: datetime.now()})
+# or specify it with a function (don't call datetime.now, just pass the function)
+# so its called when its needed
+val = prompt_namedtuple(Water, attr_use_values={"at": datetime.now})
+```
+
+Since you can specify a function to either of those arguments -- you're free to [write a completely custom prompt function](https://python-prompt-toolkit.readthedocs.io/en/master/pages/asking_for_input.html) to prompt/grab data for that field however you want
+
 ### Custom Types
 
 If you want to support custom types, or specify a special way to serialize another NamedTuple recursively, you can specify `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.
