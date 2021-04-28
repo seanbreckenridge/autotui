@@ -223,8 +223,7 @@ def prompt_datetime(
     prompt_msg: Optional[str] = None,
 ) -> datetime:
     from prompt_toolkit import prompt
-    from prompt_toolkit.validation import Validator
-    from prompt_toolkit.shortcuts import button_dialog, input_dialog, message_dialog
+    from prompt_toolkit.shortcuts import input_dialog, message_dialog
 
     m: str = create_prompt_string(datetime, for_attr, prompt_msg)
     try:
@@ -241,7 +240,7 @@ def prompt_datetime(
         state: Dict[str, Any] = {}
         validator = LiveDatetimeValidator()(dtstate=state, parser_func=dateparser.parse)
         toolbar_func: Callable[[], str] = validator.toolbar
-        resp = prompt(m, validator=validator, bottom_toolbar=toolbar_func)
+        prompt(m, validator=validator, bottom_toolbar=toolbar_func)
         dt = state["parsed"]
         assert isinstance(dt, datetime)
         return dt
