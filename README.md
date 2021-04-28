@@ -87,7 +87,7 @@ A lot of my usage of this only ever uses 3 functions in the [`autotui.shortcuts`
 
 #### Datetime prompt
 
-There are two version of the datetime prompt
+There are two versions of the `datetime` prompt
 
 - The one you see above using a dialog
 - A live version which displays the parsed datetime while typing. Since that can cause some lag, it can be enabled by setting the `AUTOTUI_DATETIME_LIVE` environment variable, e.g., add `export AUTOTUI_DATETIME_LIVE=1` to your `.bashrc`/`.zshrc`
