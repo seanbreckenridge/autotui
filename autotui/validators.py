@@ -142,12 +142,11 @@ def prompt_bool(
 
 ## DATETIME
 
-from abc import ABCMeta
-
 DatetimeParserFunc = Callable[[str], Optional[datetime]]
 if TYPE_CHECKING:
     # to define a stub class for AUTOTUI_DATETIME_LIVE
 
+    from abc import ABCMeta
     from prompt_toolkit.validation import Validator, Document
 
     class AbstractDatetimeValidator(ABCMeta, Validator):
