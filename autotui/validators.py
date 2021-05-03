@@ -1,7 +1,7 @@
 import sys
 import os
 from datetime import datetime
-from typing import Type, Optional, Callable, List, Union, Any, TYPE_CHECKING, Dict
+from typing import Type, Optional, Callable, List, Union, Any, TYPE_CHECKING, Dict, cast
 from functools import lru_cache
 
 
@@ -213,8 +213,11 @@ def LiveDatetimeValidator() -> Type["AbstractDatetimeValidator"]:
                 result = "Couldn't parse..."
             return result
 
-    # darn - cant typing.cast or subclass the ABC class here, just have to ignore
-    return _LiveDatetimeValidator  # type: ignore
+    # meh....
+    if TYPE_CHECKING:
+        return cast(Type["AbstractDatetimeValidator"], _LiveDatetimeValidator)
+    else:
+        return _LiveDatetimeValidator  # type: ignore
 
 
 def prompt_datetime(
@@ -237,10 +240,12 @@ def prompt_datetime(
     # recomputes - put it behind a envvar-enabled feature
     if "AUTOTUI_DATETIME_LIVE" in os.environ:
         state: Dict[str, Any] = {}
-        validator = LiveDatetimeValidator()(dtstate=state, parser_func=dateparser.parse)
+        validator: "AbstractDatetimeValidator" = LiveDatetimeValidator()(
+            dtstate=state, parser_func=dateparser.parse
+        )
         toolbar_func: Callable[[], str] = validator.toolbar
         prompt(m, validator=validator, bottom_toolbar=toolbar_func)
-        dt = state["parsed"]
+        dt = state["parsed"]  # grab from state instead of parsing again
         assert isinstance(dt, datetime)
         return dt
     else:
