@@ -24,17 +24,6 @@ from .typehelpers import (
     is_namedtuple_type,
 )
 
-from .validators import (
-    prompt_str,
-    prompt_int,
-    prompt_float,
-    prompt_bool,
-    prompt_datetime,
-    prompt_ask_another,
-    prompt_wrap_error,
-    prompt_optional,
-)
-
 from .exceptions import AutoTUIException
 
 
@@ -49,7 +38,7 @@ class AutoHandler(NamedTuple):
 # else assumes the user passed a function they wanted
 # to be called, instead of prompting using prompt_toolkit
 # with the attr/type validators
-def _create_callable_for_default(value: Any) -> Callable[[], Any]:
+def _create_callable_from_user(value: Any) -> Callable[[], Any]:
     if callable(value):
         return value  # type: ignore[no-any-return]
     else:
@@ -66,10 +55,18 @@ def _get_validator(
     Gets one of the built-in validators or a type_validator from the user.
     This returns a validator for a particular type, it doesn't handle collections (List/Set)
     """
+    from .validators import (
+        prompt_str,
+        prompt_int,
+        prompt_float,
+        prompt_bool,
+        prompt_datetime,
+    )
+
     if cls in type_use_values:
         # assuming this is a custom prompt function the user wrote, or
         # a function which returns the value to use for this
-        return _create_callable_for_default(type_use_values[cls])
+        return _create_callable_from_user(type_use_values[cls])
     if cls in type_validators:
         return _create_callable_prompt(attr_name, type_validators[cls])
     if is_primitive(cls):
@@ -99,6 +96,7 @@ def _prompt_many(
     """
     A helper to prompt for an item zero or more times, for populating List/Set
     """
+    from .validators import prompt_ask_another
 
     def pm_lambda() -> AnyContainerType:
         empty_return: AnyContainerType = container_type([])
@@ -130,6 +128,8 @@ def _maybe_wrap_optional(
     If a NamedTuple attribute is optional, wrap it
     with a dialog asking if the user wants to enter information for it
     """
+    from .validators import prompt_optional
+
     callf: Callable[[], Any] = lambda: None  # dummy value
     # if user provided function/errors to catch for validation
     if isinstance(handler, AutoHandler):
@@ -148,6 +148,8 @@ def _create_callable_prompt(attr_name: str, handler: AutoHandler) -> Callable[[]
     """
     Create a callable function with the informaton from a AutoHandler
     """
+    from .validators import prompt_wrap_error
+
     return lambda: prompt_wrap_error(
         func=handler.func,
         catch_errors=handler.catch_errors,
@@ -199,7 +201,7 @@ def namedtuple_prompt_funcs(
     for attr_name, nt_annotation in inspect_signature_dict(nt).items():
 
         if attr_name in attr_use_values:
-            prompt_functions[attr_name] = _create_callable_for_default(
+            prompt_functions[attr_name] = _create_callable_from_user(
                 attr_use_values[attr_name]
             )
             continue

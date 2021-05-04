@@ -5,16 +5,6 @@ import warnings
 if sys.version_info[0] == 3 and sys.version_info[1] < 8:
     warnings.warn("autotui requires at least python3.8")
 
-from .validators import (
-    prompt_str,
-    prompt_int,
-    prompt_float,
-    prompt_bool,
-    prompt_datetime,
-    prompt_ask_another,
-    prompt_wrap_error,
-    prompt_optional,
-)
 from .namedtuple_prompt import (
     namedtuple_prompt_funcs,
     prompt_namedtuple,
