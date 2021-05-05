@@ -119,41 +119,32 @@ class LiveDatetimeValidator(Validator):
     def __init__(
         self,
         *,
-        dtstate: Dict[str, Any],
         parser_func: DatetimeParserFunc,
     ):
-        """
-        dtstate is a dictionary shared between the validator and bottom
-        toolbar to display the parsed datetime result -- it should never
-        be re-assigned to a different object, only modified
-        """
         super().__init__()
         self.parser_func = parser_func
-        self.dtstate = dtstate
-
         # defaults
-        self.dtstate["text"] = ""
-        self.dtstate["parsed"] = None
+        self.text = ""
+        self.parsed: Optional[datetime] = None
 
     def validate(self, document: Document) -> None:
         text = document.text.strip().lower()
-        self.dtstate["text"] = text
-        self.dtstate["parsed"] = None  # reset so previous results dont stay
+        self.text = text
+        self.parsed = None  # reset so previous results dont stay
         if len(text) == 0:
             raise ValidationError(message="Not enough input...")
         val: Optional[datetime] = self.parser_func(text)
         if val is None:
             raise ValidationError(message=f"Couldn't parse {text} into a datetime")
         else:
-            self.dtstate["parsed"] = val
+            self.parsed = val
 
     def toolbar(self) -> str:
         result = "..."
-        if len(self.dtstate["text"]) == 0:
+        if len(self.text) == 0:
             return result
-        parsed = self.dtstate["parsed"]
-        if parsed is not None:
-            result = str(parsed)
+        if self.parsed is not None:
+            result = str(self.parsed)
         else:
             result = "Couldn't parse..."
         return result
@@ -175,11 +166,10 @@ def prompt_datetime(
     # can cause lag on slower machines because of the constant
     # recomputes - put it behind a envvar-enabled feature
     if "AUTOTUI_DATETIME_LIVE" in os.environ:
-        state: Dict[str, Any] = {}
-        validator = LiveDatetimeValidator(dtstate=state, parser_func=dateparser.parse)
+        validator = LiveDatetimeValidator(parser_func=dateparser.parse)
         toolbar_func: Callable[[], str] = validator.toolbar
         prompt(m, validator=validator, bottom_toolbar=toolbar_func)
-        dt = state["parsed"]  # grab from state instead of parsing again
+        dt = validator.parsed  # grab from state instead of parsing again
         assert isinstance(dt, datetime)
         return dt
     else:
