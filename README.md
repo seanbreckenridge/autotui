@@ -2,7 +2,7 @@
 
 [![PyPi version](https://img.shields.io/pypi/v/autotui.svg)](https://pypi.python.org/pypi/autotui) [![Python 3.8](https://img.shields.io/pypi/pyversions/autotui.svg)](https://pypi.python.org/pypi/autotui) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-This uses type hints to convert `NamedTuple`'s to JSON, and back to python objects.
+This uses type hints to convert [`NamedTuple`](https://docs.python.org/3.9/library/typing.html#typing.NamedTuple)'s (short struct-like classes) to JSON, and back to python objects.
 
 It also wraps [`prompt_toolkit`](https://python-prompt-toolkit.readthedocs.io/en/master/index.html) to prompt the user and validate the input for common types, and is extendible to whatever types you want.
 
