@@ -25,6 +25,24 @@ class O(NamedTuple):
     b: Optional[str] = None
 
 
+def test_int_converts_to_float_no_warning() -> None:
+
+    p = P(a=5, b=5, c="test", d=datetime.now())
+
+    with pytest.warns(None) as record:
+        serialized = autotui.serialize_namedtuple(p)
+        # not converted when serialized
+        assert serialized["b"] == 5
+
+        # since the type hint specifies a float, convert
+        # the 5 to a float
+        deserialized: P = autotui.deserialize_namedtuple(serialized, to=P)
+        assert isinstance(deserialized.b, float)
+        assert deserialized.b == 5.0
+
+    assert len(record) == 0
+
+
 def test_default_values() -> None:
 
     now = datetime.now()

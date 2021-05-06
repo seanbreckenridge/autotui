@@ -139,6 +139,9 @@ def _deserialize_type(
     else:
         if is_primitive(cls):
             if type(value) != cls:
+                # edge case; allow integers to be converted to floats
+                if type(value) == int and cls == float:
+                    return float(value)
                 warnings.warn(
                     f"For value {value}, expected type {cls.__name__}, found {type(value).__name__}"
                 )
