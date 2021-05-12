@@ -1,13 +1,14 @@
 import sys
 import os
 from datetime import datetime
-from typing import Type, Optional, Callable, List, Union, Any, Dict
-
+from typing import Type, Optional, Callable, List, Union, Dict
 
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import Style
 from prompt_toolkit.validation import Validator, ValidationError, Document
 from prompt_toolkit.shortcuts import button_dialog, input_dialog, message_dialog
+
+from .typehelpers import T
 
 STYLE = Style.from_dict(
     {
@@ -219,11 +220,11 @@ def prompt_ask_another(
 
 
 def prompt_optional(
-    func: Callable[[], Any],
+    func: Callable[[], T],
     for_attr: Optional[str] = None,
     prompt_msg: Optional[str] = None,
     dialog_title: str = "===",
-) -> Optional[Any]:
+) -> Optional[T]:
     """
     A helper to ask if the user wants to enter information for an optional.
     If the user confirms, calls func (which asks the user for input)
@@ -249,11 +250,11 @@ def prompt_optional(
 
 
 def prompt_wrap_error(
-    func: Callable[[str], Any],
-    catch_errors: Optional[List[Type]] = None,
+    func: Callable[[str], T],
+    catch_errors: List[Type],
     for_attr: Optional[str] = None,
     prompt_msg: Optional[str] = None,
-) -> Any:
+) -> T:
     """
     Takes the prompt string, some function which takes the string the user
     is typing as input, and possible errors to catch.
@@ -265,15 +266,13 @@ def prompt_wrap_error(
     """
     m: str = create_prompt_string(func.__name__, for_attr, prompt_msg)
 
-    errors_to_catch: List[Type] = catch_errors or []
-
     class LambdaPromptValidator(Validator):
         def validate(self, document: Document) -> None:
             text = document.text
             try:
                 func(text)
             except Exception as e:
-                for catchable in errors_to_catch:
+                for catchable in catch_errors:
                     if isinstance(e, catchable):
                         raise ValidationError(message=str(e))
                 else:

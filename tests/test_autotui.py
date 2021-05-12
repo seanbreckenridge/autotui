@@ -482,9 +482,9 @@ def test_passed_non_namedtuple():
     with pytest.warns(None) as record:
         autotui.namedtuple_prompt_funcs(Broken)
 
-    assert len(record) == 1
+    assert len(record) == 2
     assert "No parameters extracted from object, may not be NamedTuple?" == str(
-        record[0].message
+        record[1].message
     )
 
 

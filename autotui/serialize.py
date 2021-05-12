@@ -10,6 +10,8 @@ from .typehelpers import (
     PrimitiveType,
     inspect_signature_dict,
     is_namedtuple_type,
+    NT,
+    T,
 )
 
 
@@ -55,9 +57,9 @@ def _serialize_type(
 
 
 def serialize_namedtuple(
-    nt: NamedTuple,
-    attr_serializers: Optional[Dict[str, Callable[[Any], PrimitiveType]]] = None,
-    type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
+    nt: NT,
+    attr_serializers: Optional[Dict[str, Callable[[T], PrimitiveType]]] = None,
+    type_serializers: Optional[Dict[Type, Callable[[T], PrimitiveType]]] = None,
 ) -> Dict[str, Any]:
     """
     Serializes a NamedTuples to a JSON-compatible dictionary
@@ -122,7 +124,7 @@ def _deserialize_type(
     value: Any,
     cls: Type,
     is_optional: bool,
-    type_deserializers: Dict[Type, Callable[[PrimitiveType], Any]],
+    type_deserializers: Dict[Type, Callable[[PrimitiveType], T]],
 ) -> Optional[Union[PrimitiveType, Any]]:
     """
     Gets one of the built-in deserializers or a type_deserializers from the user,
@@ -155,10 +157,10 @@ def _deserialize_type(
 
 def deserialize_namedtuple(
     obj: Dict[str, Any],
-    to: Type,
-    attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
-    type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None,
-) -> NamedTuple:
+    to: Type[NT],
+    attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], T]]] = None,
+    type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], T]]] = None,
+) -> NT:
     """
     Deserializes a Dict loaded from JSON into a NamedTuple object
 
@@ -222,4 +224,4 @@ def deserialize_namedtuple(
             json_dict[attr_name] = _deserialize_type(
                 loaded_value, attr_type, is_optional, type_deserializers
             )
-    return to(**json_dict)  # type: ignore[operator,no-any-return]
+    return to(**json_dict)  # type: ignore[operator,no-any-return,call-arg]

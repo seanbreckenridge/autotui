@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import (
     Callable,
     Type,
-    NamedTuple,
     Union,
     Dict,
     List,
@@ -17,7 +16,7 @@ from . import (
     namedtuple_sequence_dumps,
     namedtuple_sequence_load,
 )
-from .typehelpers import PrimitiveType
+from .typehelpers import PrimitiveType, NT, T, PromptFunction, PromptFunctionorValue
 
 
 def _normalize(_path: Union[Path, str]) -> Path:
@@ -36,9 +35,9 @@ def _normalize(_path: Union[Path, str]) -> Path:
 
 
 def dump_to(
-    items: List[NamedTuple],
+    items: List[NT],
     path: Union[Path, str],
-    attr_serializers: Optional[Dict[str, Callable[[Any], PrimitiveType]]] = None,
+    attr_serializers: Optional[Dict[str, Callable[[T], PrimitiveType]]] = None,
     type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
 ) -> None:
     """
@@ -61,12 +60,12 @@ def dump_to(
 # args are slightly reordered here, comapared to json.load
 # to be consistent with dump_to
 def load_from(
-    to: Type,
+    to: Type[NT],
     path: Union[Path, str],
     attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
     type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None,
     allow_empty: bool = False,
-) -> List[NamedTuple]:
+) -> List[NT]:
     """
     Takes a type to load and a path to a file containing JSON.
     Reads from the file, and deserializes the items into a list,
@@ -81,7 +80,7 @@ def load_from(
     p: Path = _normalize(path)
     try:
         with p.open(mode="r") as f:
-            items: List[NamedTuple] = namedtuple_sequence_load(
+            items: List[NT] = namedtuple_sequence_load(
                 f,
                 to,
                 attr_deserializers=attr_deserializers,
@@ -96,20 +95,20 @@ def load_from(
 
 
 def load_prompt_and_writeback(
-    to: Type,
+    to: Type[NT],
     path: Union[Path, str],
     *,
     create_file: bool = True,
     attr_validators: Optional[Dict[str, AutoHandler]] = None,
-    type_validators: Optional[Dict[Type, AutoHandler]] = None,
-    attr_use_values: Optional[Dict[str, Any]] = None,
-    type_use_values: Optional[Dict[Type, Any]] = None,
-    attr_serializers: Optional[Dict[str, Callable[[Any], PrimitiveType]]] = None,
+    type_validators: Optional[Dict[Type[T], AutoHandler]] = None,
+    attr_use_values: Optional[Dict[str, PromptFunctionorValue]] = None,
+    type_use_values: Optional[Dict[Type[T], PromptFunctionorValue]] = None,
+    attr_serializers: Optional[Dict[str, Callable[[T], PrimitiveType]]] = None,
     type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
     attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
     type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None,
-    prompt_function: Optional[Callable[..., NamedTuple]] = None,
-) -> List[NamedTuple]:
+    prompt_function: Optional[Callable[..., NT]] = None,
+) -> List[NT]:
     """
     An entry point to entire library, essentially.
 
@@ -128,7 +127,7 @@ def load_prompt_and_writeback(
     """
     p: Path = _normalize(path)
     # read from file
-    items: List[NamedTuple] = []
+    items: List[NT] = []
     try:
         items = load_from(to, p, attr_deserializers, type_deserializers)
     except FileNotFoundError as fne:
@@ -137,7 +136,7 @@ def load_prompt_and_writeback(
         # warnings.warn(f"File at {p} didn't exist, using empty list")
     # prompt for the new item
     chosen_prompt_function = prompt_function or prompt_namedtuple
-    new_item: NamedTuple = chosen_prompt_function(
+    new_item: NT = chosen_prompt_function(
         to,
         attr_validators=attr_validators,
         type_validators=type_validators,

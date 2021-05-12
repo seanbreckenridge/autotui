@@ -4,6 +4,8 @@ from functools import lru_cache
 from datetime import datetime
 from typing import (
     Optional,
+    TypeVar,
+    Callable,
     Tuple,
     Type,
     Union,
@@ -14,6 +16,19 @@ from typing import (
     NamedTuple,
     Dict,
 )
+
+# namedtuple type - can't really bind this to anything, since tuple
+# is too generic, and NamedTuple isn't a type
+NT = TypeVar("NT")
+
+# Generic type -- used elsewhere for function bindings
+T = TypeVar("T")
+
+# something with no arguments which when called
+# prompts the user -- returns some value
+PromptFunction = Callable[[], T]
+OptionalPromptFunction = Callable[[], Optional[T]]
+PromptFunctionorValue = Union[PromptFunction, T]
 
 # A lot of these are helpers from:
 # https://github.com/karlicoss/cachew/blob/f4db4a6c6609170642c6cd09d50b52ac4c0edec9/src/cachew/__init__.py#L144
@@ -36,15 +51,16 @@ CONTAINERS = {
     set: Type[Set],
 }
 
-AnyContainerType = Union[List[Any], Set[Any]]
-
 
 def cache(user_function):
     'Simple lightweight unbounded cache. Sometimes called "memoize".'
     return lru_cache(maxsize=None)(user_function)
 
 
-def add_to_container(container: Union[List, Set], item: Any) -> AnyContainerType:
+AllowedContainers = Union[List[T], Set[T]]
+
+
+def add_to_container(container: AllowedContainers, item: T) -> AllowedContainers:
     if isinstance(container, list):
         container.append(item)
     elif isinstance(container, set):
@@ -181,9 +197,7 @@ def is_supported_container(cls: Type) -> bool:
 
 
 @cache
-def inspect_signature_dict(
-    nt: Type[NamedTuple],
-) -> Dict[str, Type]:
+def inspect_signature_dict(nt: Union[Callable[..., Any]]) -> Dict[str, Type]:
     return {
         name: param.annotation
         for name, param in inspect.signature(nt).parameters.items()
