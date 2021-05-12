@@ -27,7 +27,6 @@ This requires `python3.8+`, specifically for modern [`typing`](https://docs.pyth
 To install with pip, run:
 
     pip install autotui
-    pip install 'autotui[optional]'  # to install dateparser, for parsing human-readable times
 
 ---
 
@@ -238,7 +237,7 @@ You can also take a look at the [`examples`](./examples)
 ```bash
 git clone https://github.com/seanbreckenridge/autotui
 cd ./autotui
-pip install '.[testing,optional]'
+pip install '.[testing]'
 mypy ./autotui
 pytest
 ```

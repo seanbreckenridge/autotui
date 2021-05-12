@@ -155,13 +155,7 @@ def prompt_datetime(
     prompt_msg: Optional[str] = None,
 ) -> datetime:
     m: str = create_prompt_string(datetime, for_attr, prompt_msg)
-    try:
-        import dateparser  # type: ignore[import]
-    except ImportError as e:
-        print("Could not import 'dateparser'")
-        print("'pip3 install dateparser' to be able to parse date strings")
-        print(str(e))
-        sys.exit(1)
+    import dateparser  # type: ignore[import]
 
     # can cause lag on slower machines because of the constant
     # recomputes - put it behind a envvar-enabled feature

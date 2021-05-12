@@ -14,7 +14,6 @@ from .typehelpers import (
 
 
 def _serialize_datetime(dt: datetime) -> int:
-    assert type(dt) == datetime
     return int(dt.timestamp())
 
 

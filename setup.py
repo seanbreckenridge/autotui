@@ -1,7 +1,7 @@
 import io
 from setuptools import setup, find_packages
 
-requirements = ["prompt_toolkit>=3.0"]
+requirements = ["prompt_toolkit>=3.0", "dateparser"]
 
 # Use the README.md content for the long description:
 with io.open("README.md", encoding="utf-8") as fo:
@@ -28,7 +28,6 @@ setup(
             "pytest",
             "mypy",
         ],
-        "optional": ["dateparser"],
     },
     keywords="data prompt namedtuple",
     classifiers=[
