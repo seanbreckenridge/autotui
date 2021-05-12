@@ -115,6 +115,35 @@ val = prompt_namedtuple(Water, attr_use_values={"at": datetime.now})
 
 Since you can specify a function to either of those arguments -- you're free to [write a completely custom prompt function](https://python-prompt-toolkit.readthedocs.io/en/master/pages/asking_for_input.html) to prompt/grab data for that field however you want
 
+For example, to prompt for strings by opening `vim` instead:
+
+```python
+from datetime import datetime
+from typing import NamedTuple, List, Optional
+
+from autotui.shortcuts import load_prompt_and_writeback
+
+import click
+
+
+def edit_in_vim() -> str:
+    return click.edit(text=None, editor="vim").strip()
+
+
+class JournalEntry(NamedTuple):
+    creation_date: datetime
+    tags: Optional[List[str]]  # one or more tags to tag this journal entry with
+    content: str
+
+
+if __name__ == "__main__":
+    load_prompt_and_writeback(
+        JournalEntry,
+        "~/Documents/journal.json",
+        attr_use_values={"content": edit_in_vim},
+    )
+```
+
 ### Custom Types
 
 If you want to support custom types, or specify a special way to serialize another NamedTuple recursively, you can specify `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.
