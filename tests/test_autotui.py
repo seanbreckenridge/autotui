@@ -285,31 +285,28 @@ class LL(NamedTuple):
 
 def test_no_value_for_collection_non_optional_warning():
     l = LL(a=None)
-    with pytest.warns(None) as record:
+    with pytest.warns(
+        UserWarning,
+        match=r"No value found for non-optional type a, defaulting to empty container",
+    ):
         lnt = autotui.serialize_namedtuple(l)
-    assert len(record) == 1
-    assert (
-        "No value found for non-optional type a, defaulting to empty container"
-        == str(record[0].message)
-    )
     assert lnt["a"] == []
 
 
 def test_null_in_containers_warns():
     loaded = json.loads('{"a": [1,null,3]}')
-    with pytest.warns(None) as record:
+    with pytest.warns(None, match=r"expected type int, found NoneType"):
         x = autotui.deserialize_namedtuple(loaded, LL)
-    assert len(record) == 1
-    assert "expected type int, found NoneType" in str(record[0].message)
     assert x.a == [1, None, 3]
 
 
 def test_no_way_to_serialize_warning():
     x = X(a=None)
-    with pytest.warns(None) as record:
+    with pytest.warns(
+        UserWarning,
+        match=r"No value for non-optional type None, attempting to be serialized to int",
+    ):
         sx = autotui.serialize_namedtuple(x)
-    assert len(record) == 1
-    assert "No value for non-optional type None, attempting to be serialized to int"
     assert sx["a"] is None
 
 
@@ -325,9 +322,11 @@ def test_basic_sequence_dumps_loads():
 
 def test_doesnt_load_non_iterable():
     non_iterable = '{"a": 1}'
-    with pytest.raises(TypeError) as err:
+    with pytest.raises(
+        TypeError,
+        match=r"{'a': 1} is a dict, expected a top-level list from JSON source",
+    ):
         autotui.namedtuple_sequence_loads(non_iterable, X)
-    assert "{'a': 1} is a dict, expected a top-level list from JSON source" in str(err)
 
 
 class Internal(NamedTuple):
@@ -458,20 +457,18 @@ class Action(NamedTuple):
 
 
 def test_no_way_to_handle_propting():
-    with pytest.raises(AutoTUIException) as aex:
+    with pytest.raises(AutoTUIException, match=r"no way to handle prompting timedelta"):
         autotui.prompt_namedtuple(Action)
-    assert str(aex.value) == "no way to handle prompting timedelta"
 
 
 def test_no_way_to_serialize():
     a = Action(t=timedelta(seconds=5))
-    with pytest.warns(None) as record:
+    with pytest.warns(UserWarning, match=r"No known way to serialize timedelta"):
         not_serialized = autotui.serialize_namedtuple(a)
-    assert len(record) == 1
-    assert "No known way to serialize timedelta" == str(record[0].message)
-    with pytest.raises(TypeError) as te:
+    with pytest.raises(
+        TypeError, match=r"Object of type timedelta is not JSON serializable"
+    ):
         json.dumps(not_serialized)
-    assert "Object of type timedelta is not JSON serializable" == str(te.value)
 
 
 class Broken(object):
@@ -493,10 +490,8 @@ class EmptyNamedTuple(NamedTuple):
 
 
 def test_passed_namedtuple_with_no_attrs():
-    with pytest.warns(None) as record:
+    with pytest.warns(
+        UserWarning,
+        match=r"No parameters extracted from object, may not be NamedTuple?",
+    ):
         autotui.namedtuple_prompt_funcs(EmptyNamedTuple)
-
-    assert len(record) == 1
-    assert "No parameters extracted from object, may not be NamedTuple?" == str(
-        record[0].message
-    )
