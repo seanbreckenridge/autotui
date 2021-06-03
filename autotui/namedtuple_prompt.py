@@ -2,11 +2,9 @@ import functools
 import warnings
 from datetime import datetime
 from typing import (
-    Any,
     Optional,
     Union,
     List,
-    NamedTuple,
     Type,
     Dict,
     Callable,
@@ -18,12 +16,10 @@ from .typehelpers import (
     PromptFunction,
     OptionalPromptFunction,
     PromptFunctionorValue,
-    is_primitive,
     is_supported_container,
     strip_optional,
     get_collection_types,
     add_to_container,
-    PrimitiveType,
     AllowedContainers,
     inspect_signature_dict,
     is_namedtuple_type,
@@ -79,19 +75,18 @@ def _get_validator(
         return _create_callable_from_user(type_use_values[cls])
     if cls in type_validators:
         return _create_callable_prompt(attr_name, type_validators[cls])
-    if is_primitive(cls):
-        if cls == str:
-            return lambda: prompt_str(attr_name)
-        elif cls == int:
-            return lambda: prompt_int(attr_name)
-        elif cls == float:
-            return lambda: prompt_float(attr_name)
-        elif cls == bool:
-            return lambda: prompt_bool(attr_name)
-        elif cls == datetime:
-            return lambda: prompt_datetime(attr_name)
+    if cls == str:
+        return lambda: prompt_str(attr_name)
+    elif cls == int:
+        return lambda: prompt_int(attr_name)
+    elif cls == float:
+        return lambda: prompt_float(attr_name)
+    elif cls == bool:
+        return lambda: prompt_bool(attr_name)
+    elif cls == datetime:
+        return lambda: prompt_datetime(attr_name)
     # if this is another NamedTuple, call prompt_namedtuple recursively
-    if is_namedtuple_type(cls):
+    elif is_namedtuple_type(cls):
         return lambda: prompt_namedtuple(cls, type_validators=type_validators)
     raise AutoTUIException(f"no way to handle prompting {cls.__name__}")
 

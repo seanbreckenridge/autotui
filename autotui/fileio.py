@@ -1,6 +1,6 @@
 import json
 
-from typing import List, Dict, Callable, Type, Any, TextIO, Optional, TypeVar
+from typing import List, Dict, Callable, Type, Any, TextIO, Optional
 
 from .serialize import serialize_namedtuple, deserialize_namedtuple, PrimitiveType
 from .typehelpers import NT, T

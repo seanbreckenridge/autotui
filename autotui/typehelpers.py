@@ -1,7 +1,6 @@
 import typing
 import inspect
 from functools import lru_cache
-from datetime import datetime
 from typing import (
     Optional,
     TypeVar,
@@ -13,7 +12,6 @@ from typing import (
     Any,
     Set,
     Sequence,
-    NamedTuple,
     Dict,
 )
 
@@ -34,16 +32,14 @@ PromptFunctionorValue = Union[PromptFunction, T]
 # https://github.com/karlicoss/cachew/blob/f4db4a6c6609170642c6cd09d50b52ac4c0edec9/src/cachew/__init__.py#L144
 
 # items that can serialized directly into JSON by json.dumps
-# datetime is converted to UTC before storing
 PRIMITIVES = {
     str: Type[str],
     int: Type[int],
     float: Type[float],
     bool: Type[bool],
-    datetime: Type[datetime],
 }
 
-PrimitiveType = Union[str, int, float, bool, datetime, dict]
+PrimitiveType = Union[str, int, float, bool, dict]
 
 
 CONTAINERS = {

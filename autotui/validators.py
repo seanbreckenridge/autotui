@@ -1,7 +1,7 @@
 import sys
 import os
 from datetime import datetime
-from typing import Type, Optional, Callable, List, Union, Dict
+from typing import Type, Optional, Callable, List, Union
 
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import Style

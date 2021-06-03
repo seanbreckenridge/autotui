@@ -16,7 +16,7 @@ from . import (
     namedtuple_sequence_dumps,
     namedtuple_sequence_load,
 )
-from .typehelpers import PrimitiveType, NT, T, PromptFunction, PromptFunctionorValue
+from .typehelpers import PrimitiveType, NT, T, PromptFunctionorValue
 
 
 def _normalize(_path: Union[Path, str]) -> Path:

@@ -1,5 +1,5 @@
 import warnings
-from typing import Dict, Type, Callable, NamedTuple, Any, Union, Optional
+from typing import Dict, Type, Callable, Any, Union, Optional
 from datetime import datetime, timezone
 
 from .typehelpers import (
@@ -15,10 +15,6 @@ from .typehelpers import (
 )
 
 
-def _serialize_datetime(dt: datetime) -> int:
-    return int(dt.timestamp())
-
-
 def _serialize_type(
     value: Any,
     cls: Type,
@@ -29,11 +25,10 @@ def _serialize_type(
     Gets one of the built-in serializers or a type_serializers from the user,
     and serializes the value from the NamedTuple to that
     """
+    # use type serializers first, user may have already specified some way
+    # to handle nulls using a custom function
     if cls in type_serializers:
         return type_serializers[cls](value)
-    if cls == datetime:
-        # serialize into epoch time
-        return _serialize_datetime(value)
     # value can still be None here, we checked against namedtuple field type, not the dynamic
     # type of the value given
     if value is None:
@@ -43,7 +38,9 @@ def _serialize_type(
             )
         return None  # serialized to null
     else:
-        if is_primitive(cls):
+        if cls == datetime:
+            return int(value.timestamp())
+        elif is_primitive(cls):
             return value  # all other primitives are JSON compatible
         elif is_namedtuple_type(cls):
             # if the attribute for this value is another NamedTuple,
@@ -132,20 +129,35 @@ def _deserialize_type(
     """
     if cls in type_deserializers:
         return type_deserializers[cls](value)
-    elif is_optional and value is None:
-        return value
-    elif cls == datetime:
-        # serialize into epoch time
-        return datetime.fromtimestamp(value, timezone.utc)
-    else:
-        if is_primitive(cls):
+    # is falsey value
+    if value is None:
+        if is_optional:
+            return None
+        else:
             if type(value) != cls:
-                # edge case; allow integers to be converted to floats
-                if type(value) == int and cls == float:
-                    return float(value)
                 warnings.warn(
                     f"For value {value}, expected type {cls.__name__}, found {type(value).__name__}"
                 )
+            return value
+    elif cls == datetime:
+        # serialize into epoch time
+        return datetime.fromtimestamp(int(value), timezone.utc)
+    elif cls == int:
+        return int(value)
+    elif cls == float:
+        return float(value)
+    elif cls == str:
+        return str(value)
+    elif cls == bool:
+        if type(value) == str:
+            lval = value.lower()
+            if lval == "true" or lval == "True":
+                return True
+            elif lval == "false" or "False":
+                return False
+        return bool(value)
+    else:
+        if is_primitive(cls):
             return value  # all other primitives are JSON compatible
         elif is_namedtuple_type(cls):
             return deserialize_namedtuple(
