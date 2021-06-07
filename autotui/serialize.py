@@ -151,9 +151,9 @@ def _deserialize_type(
     elif cls == bool:
         if type(value) == str:
             lval = value.lower()
-            if lval == "true" or lval == "True":
+            if lval == "true":
                 return True
-            elif lval == "false" or "False":
+            elif lval == "false":
                 return False
         return bool(value)
     else:
