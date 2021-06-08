@@ -61,7 +61,7 @@ def _get_validator(
     Gets one of the built-in validators or a type_validator from the user.
     This returns a validator for a particular type, it doesn't handle collections (List/Set)
     """
-    from .validators import (
+    from .prompts import (
         prompt_str,
         prompt_int,
         prompt_float,
@@ -101,7 +101,7 @@ def _prompt_many(
     """
     A helper to prompt for an item zero or more times, for populating List/Set
     """
-    from .validators import prompt_ask_another
+    from .prompts import prompt_ask_another
 
     def pm_lambda() -> AllowedContainers:
         empty_return: AllowedContainers = container_type([])
@@ -133,7 +133,7 @@ def _maybe_wrap_optional(
     If a NamedTuple attribute is optional, wrap it
     with a dialog asking if the user wants to enter information for it
     """
-    from .validators import prompt_optional
+    from .prompts import prompt_optional
 
     callf: OptionalPromptFunction = lambda: None  # dummy value
     # if user provided function/errors to catch for validation
@@ -153,7 +153,7 @@ def _create_callable_prompt(attr_name: str, handler: AutoHandler) -> PromptFunct
     """
     Create a callable function with the informaton from a AutoHandler
     """
-    from .validators import prompt_wrap_error
+    from .prompts import prompt_wrap_error
 
     return lambda: prompt_wrap_error(
         func=handler.func,
