@@ -14,6 +14,7 @@ from typing import (
     Sequence,
     Dict,
 )
+from enum import Enum
 
 # namedtuple type - can't really bind this to anything, since tuple
 # is too generic, and NamedTuple isn't a type
@@ -98,6 +99,27 @@ def is_namedtuple_obj(thing: Any) -> bool:
 # created with class(NamedTuple), not an instance
 def is_namedtuple_type(thing: Type) -> bool:
     return hasattr(thing, "_fields") and issubclass(thing, tuple) and callable(thing)
+
+
+@cache
+def enum_getval(enum: Type[Enum], value: Any) -> Enum:
+    """
+    Given some value and an enum, get the corresponding Enum value
+
+    Prefer the enum value to the enum attribute name
+    since its more likely the value is dumped to JSON
+    """
+    try:
+        return enum[value]
+    except KeyError:
+        pass
+    try:
+        return enum(value)
+    except ValueError:
+        pass
+    raise ValueError(
+        f"Could not find {value} on Enumeration {enum} {enum.__members__.items()}"
+    )
 
 
 def is_union(cls: Type) -> bool:

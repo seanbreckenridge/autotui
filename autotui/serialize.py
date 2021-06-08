@@ -1,6 +1,7 @@
 import warnings
 from typing import Dict, Type, Callable, Any, Union, Optional
 from datetime import datetime, timezone
+from enum import Enum
 
 from .typehelpers import (
     is_supported_container,
@@ -10,6 +11,7 @@ from .typehelpers import (
     PrimitiveType,
     inspect_signature_dict,
     is_namedtuple_type,
+    enum_getval,
     NT,
     T,
 )
@@ -40,6 +42,16 @@ def _serialize_type(
     else:
         if cls == datetime:
             return int(value.timestamp())
+        elif issubclass(cls, Enum):
+            # assumes that the enumeration value the user provided is JSON-serializable
+            if isinstance(value, Enum):
+                # https://docs.python.org/3/library/enum.html#programmatic-access-to-enumeration-members-and-their-attributes
+                return value.value
+            else:
+                # this isn't an enum type, but the user specified the direct value, so we're
+                # assuming that its a valid value for this enumeration. The value is dumped,
+                # and next time its loaded it should deserialize onto the Enum value
+                return value
         elif is_primitive(cls):
             return value  # all other primitives are JSON compatible
         elif is_namedtuple_type(cls):
@@ -131,17 +143,17 @@ def _deserialize_type(
         return type_deserializers[cls](value)
     # is falsey value
     if value is None:
-        if is_optional:
-            return None
-        else:
+        if not is_optional:
             if type(value) != cls:
                 warnings.warn(
                     f"For value {value}, expected type {cls.__name__}, found {type(value).__name__}"
                 )
-            return value
+        return None
     elif cls == datetime:
         # serialize into epoch time
         return datetime.fromtimestamp(int(value), timezone.utc)
+    elif issubclass(cls, Enum):
+        return enum_getval(cls, value)
     elif cls == int:
         return int(value)
     elif cls == float:

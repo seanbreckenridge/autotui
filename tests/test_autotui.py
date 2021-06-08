@@ -4,6 +4,7 @@ import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import NamedTuple, Optional, List, Set, Dict, Any
+from enum import Enum
 
 import pytest
 import autotui
@@ -495,3 +496,38 @@ def test_passed_namedtuple_with_no_attrs():
         match=r"No parameters extracted from object, may not be NamedTuple?",
     ):
         autotui.namedtuple_prompt_funcs(EmptyNamedTuple)
+
+
+class En(Enum):
+    x = 1
+    y = 1
+    z = "something"
+
+
+class DAT(NamedTuple):
+    choice: En
+
+
+def test_enum_serialization() -> None:
+    d = DAT(choice=En.x)
+    d2 = DAT(choice=En.z)
+    ds = autotui.serialize_namedtuple(d)
+    ds2 = autotui.serialize_namedtuple(d2)
+
+    assert ds["choice"] == 1
+    assert ds2["choice"] == "something"
+
+    assert d == autotui.deserialize_namedtuple(ds, DAT)
+    assert d2 == autotui.deserialize_namedtuple(ds2, DAT)
+
+
+def test_enum_use_key() -> None:
+    d = DAT(choice=En.y)
+    ds = {"choice": "y"}  # use key name instead of value
+
+    assert autotui.deserialize_namedtuple(ds, DAT) == d
+
+def test_enum_fails() -> None:
+    ds = {"choice": "xx"}
+    with pytest.raises(ValueError, match=r"Could not find xx on Enumeration"):
+        autotui.deserialize_namedtuple(ds, DAT)
