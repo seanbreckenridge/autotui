@@ -6,7 +6,12 @@ from enum import Enum
 
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import Style
-from prompt_toolkit.validation import Validator, ValidationError, Document
+from prompt_toolkit.validation import (
+    Validator,
+    ThreadedValidator,
+    ValidationError,
+    Document,
+)
 from prompt_toolkit.completion import FuzzyWordCompleter
 from prompt_toolkit.shortcuts import button_dialog, input_dialog, message_dialog
 
@@ -163,11 +168,16 @@ def prompt_datetime(
     # can cause lag on slower machines because of the constant
     # recomputes - put it behind a envvar-enabled feature
     if "AUTOTUI_DATETIME_LIVE" in os.environ:
-        validator = LiveDatetimeValidator(parser_func=dateparser.parse)
-        toolbar_func: Callable[[], str] = validator.toolbar
-        prompt(m, validator=validator, bottom_toolbar=toolbar_func)
-        dt = validator.parsed  # grab from state instead of parsing again
-        assert isinstance(dt, datetime)
+        dt_validator = LiveDatetimeValidator(parser_func=dateparser.parse)
+        resp = prompt(
+            m,
+            validator=ThreadedValidator(dt_validator),
+            bottom_toolbar=dt_validator.toolbar,
+        )
+        dt = dateparser.parse(resp)
+        assert dt is not None and isinstance(
+            dt, datetime
+        ), "Fatal Erorr; Could not parse response from datetime prompt into a datetime"
         return dt
     else:
         parsed_time: Optional[datetime] = None
@@ -241,7 +251,9 @@ def prompt_enum(
             self.text = document.text
             if self.text in enum_desc_map:
                 return
-            raise ValidationError(message=f"{self.text} is not part of the {enum_cls} enum")
+            raise ValidationError(
+                message=f"{self.text} is not part of the {enum_cls} enum"
+            )
 
         def toolbar(self):
             if self.text in enum_desc_map:
@@ -258,7 +270,6 @@ def prompt_enum(
         validator=validator,
         bottom_toolbar=validator.toolbar,
     )
-
 
     # use what the user typed
     if resp in enum_desc_map:

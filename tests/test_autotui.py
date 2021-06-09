@@ -527,6 +527,7 @@ def test_enum_use_key() -> None:
 
     assert autotui.deserialize_namedtuple(ds, DAT) == d
 
+
 def test_enum_fails() -> None:
     ds = {"choice": "xx"}
     with pytest.raises(ValueError, match=r"Could not find xx on Enumeration"):
