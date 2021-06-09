@@ -22,7 +22,7 @@ jobs:
       - name: Install packages
         run: |
           python -m pip install --upgrade pip
-          pip install '.[testing,optional]'
+          pip install '.[testing]'
       - name: Run mypy
         run: |
           mypy ./autotui
