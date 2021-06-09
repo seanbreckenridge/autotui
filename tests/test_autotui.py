@@ -75,7 +75,7 @@ class WeightData(NamedTuple):
     data: Weight
 
 
-def test_type_auto_handler():
+def test_type_auto_handler() -> None:
     handler = autotui.AutoHandler(func=Weight, catch_errors=[ValueError])
     # use handler to specify how to create/catch
     funcs = autotui.namedtuple_prompt_funcs(
@@ -84,7 +84,7 @@ def test_type_auto_handler():
     assert len(funcs.keys()) == 2
 
 
-def test_attr_auto_handler():
+def test_attr_auto_handler() -> None:
     handler = autotui.AutoHandler(func=Weight, catch_errors=[ValueError])
     funcs = autotui.namedtuple_prompt_funcs(
         WeightData, attr_validators={"data": handler}
@@ -92,18 +92,18 @@ def test_attr_auto_handler():
     assert len(funcs.keys()) == 2
 
 
-def test_cant_handle():
+def test_cant_handle() -> None:
     with pytest.raises(AutoTUIException):
         autotui.namedtuple_prompt_funcs(WeightData)
 
 
-def test_prompt_funcs():
+def test_prompt_funcs() -> None:
     autotui.namedtuple_prompt_funcs(P)
     autotui.namedtuple_prompt_funcs(L)
     autotui.namedtuple_prompt_funcs(O)
 
 
-def test_basic_serialize():
+def test_basic_serialize() -> None:
     cur: datetime = datetime.now()
     timestamp: int = int(cur.timestamp())
     x = P(a=1, b=2.0, c="test", d=cur)
@@ -124,7 +124,7 @@ def weight_deserializer(weight_val: float) -> Weight:
     return Weight(f"{weight_val}lbs")
 
 
-def test_supply_serializer_deserializer():
+def test_supply_serializer_deserializer() -> None:
     cur: datetime = datetime.now()
     timestamp: int = int(cur.timestamp())
     w = WeightData(when=cur, data=Weight("20lbs"))
@@ -221,7 +221,7 @@ class X(NamedTuple):
     a: int
 
 
-def test_expected_key_warning():
+def test_expected_key_warning() -> None:
     loaded = json.loads("{}")
     with pytest.warns(None) as record:
         x = autotui.deserialize_namedtuple(loaded, X)
@@ -235,7 +235,7 @@ class X_OPT(NamedTuple):
     a: Optional[int]
 
 
-def test_optional_key_loads_with_no_warnings():
+def test_optional_key_loads_with_no_warnings() -> None:
     loaded = json.loads("{}")
     x = autotui.deserialize_namedtuple(loaded, X_OPT)
     assert x.a is None
@@ -253,7 +253,7 @@ def deserialize_a(x: Optional[int]) -> int:
 # could be done similarly to serialize nulls into a default
 
 
-def test_optional_specified_null_deserializer():
+def test_optional_specified_null_deserializer() -> None:
     # note: type_deserializers dont specify the type of the dynamically loaded value,
     # they specify the type specified by the namedtuple.
     # so cant do something like
@@ -284,8 +284,8 @@ class LL(NamedTuple):
     a: List[int]
 
 
-def test_no_value_for_collection_non_optional_warning():
-    l = LL(a=None)
+def test_no_value_for_collection_non_optional_warning() -> None:
+    l = LL(a=None)  # type: ignore
     with pytest.warns(
         UserWarning,
         match=r"No value found for non-optional type a, defaulting to empty container",
@@ -294,15 +294,15 @@ def test_no_value_for_collection_non_optional_warning():
     assert lnt["a"] == []
 
 
-def test_null_in_containers_warns():
+def test_null_in_containers_warns() -> None:
     loaded = json.loads('{"a": [1,null,3]}')
     with pytest.warns(None, match=r"expected type int, found NoneType"):
         x = autotui.deserialize_namedtuple(loaded, LL)
     assert x.a == [1, None, 3]
 
 
-def test_no_way_to_serialize_warning():
-    x = X(a=None)
+def test_no_way_to_serialize_warning() -> None:
+    x = X(a=None)  # type: ignore
     with pytest.warns(
         UserWarning,
         match=r"No value for non-optional type None, attempting to be serialized to int",
@@ -311,7 +311,7 @@ def test_no_way_to_serialize_warning():
     assert sx["a"] is None
 
 
-def test_basic_sequence_dumps_loads():
+def test_basic_sequence_dumps_loads() -> None:
     x = [X(a=1), X(a=5)]
     xlist_str: str = autotui.namedtuple_sequence_dumps(x, indent=None)
     assert xlist_str == """[{"a": 1}, {"a": 5}]"""
@@ -321,7 +321,7 @@ def test_basic_sequence_dumps_loads():
     assert back_to_x[1] == X(a=5)
 
 
-def test_doesnt_load_non_iterable():
+def test_doesnt_load_non_iterable() -> None:
     non_iterable = '{"a": 1}'
     with pytest.raises(
         TypeError,
@@ -339,7 +339,7 @@ class Wrapper(NamedTuple):
     z: Internal
 
 
-def test_recursive():
+def test_recursive() -> None:
     obj = Wrapper(y=5, z=Internal(x=10))
     [dumped_obj] = json.loads(autotui.namedtuple_sequence_dumps([obj]))
     assert dumped_obj["y"] == 5
@@ -381,7 +381,7 @@ def deserialize_temp(x: float) -> Temperature:
     return Temperature(f"{x}C")
 
 
-def test_custom_handles_serializers():
+def test_custom_handles_serializers() -> None:
     t = Temperature("20C")
     assert t.celsius == 20.0
     # just test creating the namedtuple prompt
@@ -430,7 +430,7 @@ def test_custom_handles_serializers():
     os.unlink(f.name)
 
 
-def test_shortcuts():
+def test_shortcuts() -> None:
     cur = datetime.now()
     t = Temperature("20C")
     f = tempfile.NamedTemporaryFile(delete=False)
@@ -457,12 +457,12 @@ class Action(NamedTuple):
     t: timedelta
 
 
-def test_no_way_to_handle_propting():
+def test_no_way_to_handle_propting() -> None:
     with pytest.raises(AutoTUIException, match=r"no way to handle prompting timedelta"):
         autotui.prompt_namedtuple(Action)
 
 
-def test_no_way_to_serialize():
+def test_no_way_to_serialize() -> None:
     a = Action(t=timedelta(seconds=5))
     with pytest.warns(UserWarning, match=r"No known way to serialize timedelta"):
         not_serialized = autotui.serialize_namedtuple(a)
@@ -476,7 +476,7 @@ class Broken(object):
     pass
 
 
-def test_passed_non_namedtuple():
+def test_passed_non_namedtuple() -> None:
     with pytest.warns(None) as record:
         autotui.namedtuple_prompt_funcs(Broken)
 
@@ -490,7 +490,7 @@ class EmptyNamedTuple(NamedTuple):
     pass
 
 
-def test_passed_namedtuple_with_no_attrs():
+def test_passed_namedtuple_with_no_attrs() -> None:
     with pytest.warns(
         UserWarning,
         match=r"No parameters extracted from object, may not be NamedTuple?",
