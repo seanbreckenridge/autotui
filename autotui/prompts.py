@@ -1,14 +1,16 @@
 import sys
 import os
 from datetime import datetime
-from typing import Type, Optional, Callable, List, Union
+from typing import Type, Optional, Callable, List, Union, Dict
+from enum import Enum
 
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import Style
 from prompt_toolkit.validation import Validator, ValidationError, Document
+from prompt_toolkit.completion import FuzzyWordCompleter
 from prompt_toolkit.shortcuts import button_dialog, input_dialog, message_dialog
 
-from .typehelpers import T
+from .typehelpers import T, enum_attribute_dict
 
 STYLE = Style.from_dict(
     {
@@ -192,6 +194,78 @@ def prompt_datetime(
                     style=STYLE,
                 ).run()
         return parsed_time
+
+
+## ENUM
+
+
+def _create_enum_word_targets(enum_mapping: Dict[str, Enum]) -> Dict[str, Enum]:
+    # create a map of any possible description that maps back to the enumeration
+    # type. When the user selects one of the descriptions, we can use this map
+    # to get the corresponding Enum value
+    enum_desc_map: Dict[str, Enum] = {}
+    # regular key
+    for k, v in enum_mapping.items():
+        if k not in enum_desc_map:
+            enum_desc_map[k] = v
+    # casefold (lowercase) key
+    for k, v in enum_mapping.items():
+        kc = k.casefold()
+        if kc not in enum_mapping.items():
+            enum_desc_map[kc] = v
+    # string representation of the value
+    for k, v in enum_mapping.items():
+        sv = str(v)
+        if sv not in enum_desc_map:
+            enum_desc_map[sv] = v
+    return enum_desc_map
+
+
+def prompt_enum(
+    enum_cls: Type[Enum],
+    for_attr: Optional[str] = None,
+    prompt_msg: Optional[str] = None,
+    dialog_title: str = "===",
+) -> Enum:
+    m: str = create_prompt_string(str, for_attr, prompt_msg)
+    enum_mapping: Dict[str, Enum] = enum_attribute_dict(enum_cls)
+
+    enum_desc_map = _create_enum_word_targets(enum_mapping)
+
+    class EnumClosureValidator(Validator):
+        def __init__(self):
+            self.text = ""
+
+        def validate(self, document: Document) -> None:
+            # hmm; don't strip here since spaces might be part of the enum?
+            self.text = document.text
+            if self.text in enum_desc_map:
+                return
+            raise ValidationError(message=f"{self.text} is not part of the {enum_cls} enum")
+
+        def toolbar(self):
+            if self.text in enum_desc_map:
+                return str(enum_desc_map[self.text])
+            else:
+                return "..."
+
+    validator = EnumClosureValidator()
+
+    # prompt using a repl prompt with autocompletion/validation
+    resp = prompt(
+        m,
+        completer=FuzzyWordCompleter(words=list(enum_desc_map)),
+        validator=validator,
+        bottom_toolbar=validator.toolbar,
+    )
+
+
+    # use what the user typed
+    if resp in enum_desc_map:
+        return enum_desc_map[resp]
+
+    # else lowercase
+    return enum_desc_map[resp.casefold()]
 
 
 ## LIST/SET repeat-prompt?

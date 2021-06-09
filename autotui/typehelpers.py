@@ -220,3 +220,12 @@ def inspect_signature_dict(nt: Union[Callable[..., Any]]) -> Dict[str, Type]:
         name: param.annotation
         for name, param in inspect.signature(nt).parameters.items()
     }
+
+
+@cache
+def enum_attribute_dict(enum_cls: Type[Enum]) -> Dict[str, Enum]:
+    if not hasattr(enum_cls, "__members__"):
+        raise TypeError(
+            f"Could not find __members__ attribute on Enumeration {enum_cls}. May have passed a value instead of a type?"
+        )
+    return dict(enum_cls.__members__.items())

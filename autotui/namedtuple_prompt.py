@@ -9,6 +9,7 @@ from typing import (
     Dict,
     Callable,
 )
+from enum import Enum
 
 from .typehelpers import (
     T,
@@ -67,15 +68,16 @@ def _get_validator(
         prompt_float,
         prompt_bool,
         prompt_datetime,
+        prompt_enum,
     )
 
     if cls in type_use_values:
         # assuming this is a custom prompt function the user wrote, or
         # a function which returns the value to use for this
         return _create_callable_from_user(type_use_values[cls])
-    if cls in type_validators:
+    elif cls in type_validators:
         return _create_callable_prompt(attr_name, type_validators[cls])
-    if cls == str:
+    elif cls == str:
         return lambda: prompt_str(attr_name)
     elif cls == int:
         return lambda: prompt_int(attr_name)
@@ -85,6 +87,8 @@ def _get_validator(
         return lambda: prompt_bool(attr_name)
     elif cls == datetime:
         return lambda: prompt_datetime(attr_name)
+    elif issubclass(cls, Enum):
+        return lambda: prompt_enum(enum_cls=cls, for_attr=attr_name)
     # if this is another NamedTuple, call prompt_namedtuple recursively
     elif is_namedtuple_type(cls):
         return lambda: prompt_namedtuple(cls, type_validators=type_validators)

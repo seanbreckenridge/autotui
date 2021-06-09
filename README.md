@@ -13,6 +13,7 @@ This has built-ins to prompt, validate and serialize:
 - `bool`
 - `str`
 - `datetime`
+- `Enum`
 - `Optional[<type>]`
 - `List[<type>]`
 - `Set[<type>]`
