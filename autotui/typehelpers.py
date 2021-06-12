@@ -1,3 +1,4 @@
+import sys
 import typing
 import inspect
 from functools import lru_cache
@@ -165,6 +166,11 @@ def strip_optional(cls: Type) -> Tuple[Type, bool]:
     return (cls, is_opt)
 
 
+# needed to check if we can type hint generics
+# https://www.python.org/dev/peps/pep-0585/
+above_39 = sys.version_info.major >= 3 and sys.version_info.minor >= 9
+
+
 @cache
 def strip_generic(tp):
     """
@@ -177,6 +183,10 @@ def strip_generic(tp):
     GA = getattr(typing, "_GenericAlias")
     if isinstance(tp, GA):
         return tp.__origin__
+    if above_39:  # >= Python3.9
+        origin = typing.get_origin(tp)
+        if origin is not None:
+            return origin
     return tp
 
 

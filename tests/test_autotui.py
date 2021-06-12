@@ -1,3 +1,4 @@
+import sys
 import os
 import json
 import tempfile
@@ -532,3 +533,14 @@ def test_enum_fails() -> None:
     ds = {"choice": "xx"}
     with pytest.raises(ValueError, match=r"Could not find xx on Enumeration"):
         autotui.deserialize_namedtuple(ds, DAT)
+
+
+def test_hint_generics() -> None:
+    # needed to check if we can type hint generics
+    # https://www.python.org/dev/peps/pep-0585/
+    above_39 = sys.version_info.major >= 3 and sys.version_info.minor >= 9
+
+    if above_39:
+        from autotui.typehelpers import strip_generic
+
+        assert strip_generic(list[int]) == list
