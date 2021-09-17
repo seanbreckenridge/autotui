@@ -1,5 +1,4 @@
 import functools
-import warnings
 from datetime import datetime
 from typing import (
     Optional,
@@ -25,6 +24,7 @@ from .typehelpers import (
     inspect_signature_dict,
     is_namedtuple_type,
 )
+from .warn import warn
 
 from .exceptions import AutoTUIException
 
@@ -191,7 +191,7 @@ def namedtuple_prompt_funcs(
 
     # warn if this doesn't look like a NamedTuple
     if not is_namedtuple_type(nt):
-        warnings.warn(f"{nt} doesn't look like a NamedTuple")
+        warn(f"{nt} doesn't look like a NamedTuple")
 
     # example:
     # class X(NamedTuple):
@@ -263,7 +263,7 @@ def namedtuple_prompt_funcs(
             )
     # warn if no attributes are extracted
     if len(prompt_functions) == 0:
-        warnings.warn("No parameters extracted from object, may not be NamedTuple?")
+        warn("No parameters extracted from object, may not be NamedTuple?")
     return prompt_functions
 
 

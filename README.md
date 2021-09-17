@@ -258,7 +258,9 @@ Action(name='on the bus', duration=datetime.timedelta(seconds=1800))
 
 The general philosophy I've taken for serialization and deserialization is send a warning if the types aren't what the NamedTuple expects, but load the values anyways. If serialization can't serialize something, it warns, and if `json.dump` doesn't have a way to handle it, it throws an error. When deserializing, all values are loaded from their JSON primitives, and then converted into their corresponding python equivalents; If the value doesn't exist, it warns and sets it to None, if theres a deserializer supplied, it uses that. This is meant to help facilitate quick TUIs, I don't want to have to fight with it.
 
-Theres lots of examples on how this is handled/edge-cases in the [`tests`](./tests/test_autotui.py).
+(If you know what you're doing and want to ignore those warnings, you can set the `AUTOTUI_DISABLE_WARNINGS=1` environment variable)
+
+There are lots of examples on how this is handled/edge-cases in the [`tests`](./tests/test_autotui.py).
 
 You can also take a look at the [`examples`](./examples)
 

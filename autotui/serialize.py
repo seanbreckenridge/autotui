@@ -1,4 +1,3 @@
-import warnings
 from typing import Dict, Type, Callable, Any, Union, Optional
 from datetime import datetime, timezone
 from enum import Enum
@@ -15,6 +14,7 @@ from .typehelpers import (
     NT,
     T,
 )
+from .warn import warn
 
 
 def _serialize_type(
@@ -35,7 +35,7 @@ def _serialize_type(
     # type of the value given
     if value is None:
         if not is_optional:
-            warnings.warn(
+            warn(
                 f"No value for non-optional type {value}, attempting to be serialized to {cls.__name__}"
             )
         return None  # serialized to null
@@ -58,7 +58,7 @@ def _serialize_type(
             # if the attribute for this value is another NamedTuple,
             # recursively serialize the value
             return serialize_namedtuple(value, type_serializers=type_serializers)
-    warnings.warn(f"No known way to serialize {cls.__name__}")
+    warn(f"No known way to serialize {cls.__name__}")
     return value
     # raise? it'll fail when json module fails to do it anyways, so
     # might as well leave it
@@ -102,7 +102,7 @@ def serialize_namedtuple(
             # not the internal type
             if attr_value is None:
                 if not is_optional:
-                    warnings.warn(
+                    warn(
                         f"No value found for non-optional type {attr_name}, defaulting to empty container"
                     )
                     json_dict[attr_name] = container_type([])
@@ -145,7 +145,7 @@ def _deserialize_type(
     if value is None:
         if not is_optional:
             if type(value) != cls:
-                warnings.warn(
+                warn(
                     f"For value {value}, expected type {cls.__name__}, found {type(value).__name__}"
                 )
         return None
@@ -175,7 +175,7 @@ def _deserialize_type(
             return deserialize_namedtuple(
                 value, to=cls, type_deserializers=type_deserializers
             )
-    warnings.warn(f"No known way to deserialize {cls}")
+    warn(f"No known way to deserialize {cls}")
     return value
 
 
@@ -211,7 +211,7 @@ def deserialize_namedtuple(
 
         # key wasnt in loaded value
         if loaded_value is None and not is_optional:
-            warnings.warn(
+            warn(
                 f"Expected key {attr_name} on non-optional field, no such key existed in loaded data"
             )
 
@@ -220,7 +220,7 @@ def deserialize_namedtuple(
             # if we didnt load anything (null or key didnt exist)
             if loaded_value is None:
                 if not is_optional:
-                    warnings.warn(
+                    warn(
                         f"No value loaded for non-optional type {attr_name}, defaulting to empty container"
                     )
                     json_dict[attr_name] = container_type([])

@@ -133,7 +133,7 @@ def load_prompt_and_writeback(
     except FileNotFoundError as fne:
         if not create_file:
             raise fne
-        # warnings.warn(f"File at {p} didn't exist, using empty list")
+        # warn(f"File at {p} didn't exist, using empty list")
     # prompt for the new item
     chosen_prompt_function = prompt_function or prompt_namedtuple
     new_item: NT = chosen_prompt_function(
