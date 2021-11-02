@@ -145,6 +145,21 @@ if __name__ == "__main__":
     )
 ```
 
+Can also define those as a `staticmethod` on the class, so you don't have to pass around the extra state:
+
+```python
+class JournalEntry:
+    ...
+
+    @staticmethod
+    def attr_use_values() -> Dict:
+        return {"content": edit_in_vim}
+
+
+# pulls attr_use_values from the function
+prompt_namedtuple(JournalEntry, "~/Documents/journal.json")
+```
+
 ### Custom Types
 
 If you want to support custom types, or specify a special way to serialize another NamedTuple recursively, you can specify `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.

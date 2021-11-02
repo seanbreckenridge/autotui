@@ -60,6 +60,27 @@ def test_default_values() -> None:
     assert P(a=5, b=10.0, c="something", d=now) == val
 
 
+class Def(NamedTuple):
+    x: int
+    y: str
+
+    @staticmethod
+    def attr_use_values() -> Dict:
+        return {"x": 5}
+
+    @staticmethod
+    def type_use_values() -> Dict:
+        return {str: "default"}
+
+def test_default_values_w_class() -> None:
+    d = autotui.prompt_namedtuple(Def)
+    assert d == Def(x=5, y="default")
+
+    # override with kwarg
+    d = autotui.prompt_namedtuple(Def, type_use_values={str: "something"})
+    assert d == Def(x=5, y="something")
+
+
 @dataclass(init=False)
 class Weight(object):
     weight: float

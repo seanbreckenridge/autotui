@@ -1,6 +1,7 @@
 import functools
 from datetime import datetime
 from typing import (
+    Any,
     Optional,
     Union,
     List,
@@ -167,6 +168,35 @@ def _create_callable_prompt(attr_name: str, handler: AutoHandler) -> PromptFunct
     )
 
 
+def _nt_dict(nt: Type, attr: str) -> Dict:
+    """
+    Lets the user define any of the dictionaries as a function
+    which returns the dict on the class -- e.g.
+
+    class N(NamedTuple):
+        x: int
+        y: str
+
+        @staticmethod
+        def type_use_values():
+            return {"y": ""}  # default
+    """
+    d: Any = getattr(nt, attr, {})
+    # if this is a function which returns the dict
+    if callable(d):
+        d = d()
+    assert isinstance(d, dict)
+    return d
+
+
+# if d2 is not None, update d1 with its keys
+def _update(d1: Dict, d2: Optional[Dict] = None) -> Dict:
+    if d2 is not None:
+        for k in d2.keys():
+            d1[k] = d2[k]
+    return d1
+
+
 def namedtuple_prompt_funcs(
     nt: Type,
     attr_validators: Optional[Dict[str, AutoHandler]] = None,
@@ -183,11 +213,16 @@ def namedtuple_prompt_funcs(
     Else, prints an error and fails
     """
 
-    attr_validators = attr_validators or {}
-    type_validators = type_validators or {}
+    # if the user defined a function to return
+    # the one of the dicts here, get that info
+    # any kwargs passed explicitly override keys on
+    # that dictionary
+    # the attribute defined on it to use that for defaults
+    _attr_validators = _update(_nt_dict(nt, "attr_validators"), attr_validators)
+    _type_validators = _update(_nt_dict(nt, "type_validators"), type_validators)
 
-    attr_use_values = attr_use_values or {}
-    type_use_values = type_use_values or {}
+    _attr_use_values = _update(_nt_dict(nt, "attr_use_values"), attr_use_values)
+    _type_use_values = _update(_nt_dict(nt, "type_use_values"), type_use_values)
 
     # warn if this doesn't look like a NamedTuple
     if not is_namedtuple_type(nt):
@@ -209,9 +244,9 @@ def namedtuple_prompt_funcs(
     # nt_annotation is the type
     for attr_name, nt_annotation in inspect_signature_dict(nt).items():
 
-        if attr_name in attr_use_values:
+        if attr_name in _attr_use_values:
             prompt_functions[attr_name] = _create_callable_from_user(
-                attr_use_values[attr_name]
+                _attr_use_values[attr_name]
             )
             continue
 
@@ -219,8 +254,8 @@ def namedtuple_prompt_funcs(
         attr_type, is_optional = strip_optional(nt_annotation)
 
         # if the user specified a validator for this attribute name, use that
-        if attr_name in attr_validators:
-            handler: AutoHandler = attr_validators[attr_name]
+        if attr_name in _attr_validators:
+            handler: AutoHandler = _attr_validators[attr_name]
             prompt_functions[attr_name] = _maybe_wrap_optional(
                 attr_name, handler, is_optional
             )
@@ -241,7 +276,7 @@ def namedtuple_prompt_funcs(
 
             # TODO: pass prompt_msg from internal type to prompt another kwarg??
             promptfunc = _get_validator(
-                internal_type, attr_name, type_validators, type_use_values
+                internal_type, attr_name, _type_validators, _type_use_values
             )
             # wrap to ask one or more times
             # wrap in container_type List/Set
@@ -256,7 +291,7 @@ def namedtuple_prompt_funcs(
             # a: int
             # b: Optional[str]
             promptfunc = _get_validator(
-                attr_type, attr_name, type_validators, type_use_values
+                attr_type, attr_name, _type_validators, _type_use_values
             )
             prompt_functions[attr_name] = _maybe_wrap_optional(
                 attr_name, promptfunc, is_optional

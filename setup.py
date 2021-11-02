@@ -10,7 +10,7 @@ with io.open("README.md", encoding="utf-8") as fo:
 pkg = "autotui"
 setup(
     name=pkg,
-    version="0.3.6",
+    version="0.3.7",
     url="https://github.com/seanbreckenridge/autotui",
     author="Sean Breckenridge",
     author_email="seanbrecke@gmail.com",
