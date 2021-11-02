@@ -148,7 +148,7 @@ if __name__ == "__main__":
 Can also define those as a `staticmethod` on the class, so you don't have to pass around the extra state:
 
 ```python
-class JournalEntry:
+class JournalEntry(NamedTuple):
     ...
 
     @staticmethod
