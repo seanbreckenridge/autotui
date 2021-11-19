@@ -1,5 +1,6 @@
 import sys
 import os
+import warnings
 from datetime import datetime
 from typing import Type, Optional, Callable, List, Union, Dict
 from enum import Enum
@@ -16,6 +17,9 @@ from prompt_toolkit.completion import FuzzyWordCompleter
 from prompt_toolkit.shortcuts import button_dialog, input_dialog, message_dialog
 
 from .typehelpers import T, enum_attribute_dict
+
+# remove pytz warning from dateparser module
+warnings.filterwarnings("ignore", "The localize method is no longer necessary")
 
 STYLE = Style.from_dict(
     {
