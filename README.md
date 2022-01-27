@@ -1,6 +1,6 @@
 # autotui
 
-[![PyPi version](https://img.shields.io/pypi/v/autotui.svg)](https://pypi.python.org/pypi/autotui) [![Python 3.8](https://img.shields.io/pypi/pyversions/autotui.svg)](https://pypi.python.org/pypi/autotui) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![PyPi version](https://img.shields.io/pypi/v/autotui.svg)](https://pypi.python.org/pypi/autotui) [![Python 3.8|3.9|3.10](https://img.shields.io/pypi/pyversions/autotui.svg)](https://pypi.python.org/pypi/autotui) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 This uses type hints to convert [`NamedTuple`](https://docs.python.org/3.9/library/typing.html#typing.NamedTuple)'s (short struct-like classes) to JSON, and back to python objects.
 
