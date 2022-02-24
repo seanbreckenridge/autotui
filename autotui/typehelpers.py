@@ -90,7 +90,7 @@ def get_union_args(cls: Type) -> Optional[Tuple[List[Type[Any]], bool]]:
     >>> get_union_args(str)
     """
     is_union_type = False
-    if above_310 and typing.get_origin(cls) == types.UnionType:
+    if above_310 and typing.get_origin(cls) == types.UnionType:  # type: ignore[attr-defined]
         is_union_type = True
     if not is_union_type:
         origin_attr = getattr(cls, "__origin__", None)
