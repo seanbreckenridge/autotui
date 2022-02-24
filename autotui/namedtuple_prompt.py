@@ -251,7 +251,6 @@ def namedtuple_prompt_funcs(
             )
             continue
 
-
         # TODO: refactor this block? same in serialize
         #
         # (<class 'int'>, False)

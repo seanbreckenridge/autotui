@@ -93,7 +93,6 @@ def serialize_namedtuple(
             assert len(attr_types) == 1
             attr_type = attr_types[0]
 
-
         attr_value = getattr(nt, attr_name)
 
         # if the user specified a serializer for this attribute name, use that
