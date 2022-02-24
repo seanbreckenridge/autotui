@@ -14,9 +14,9 @@ This has built-ins to prompt, validate and serialize:
 - `str`
 - `datetime`
 - `Enum`
-- `Optional[<type>]` (or `<type> | None`)
+- `Optional[<type>]` [(or `<type> | None`)](https://www.python.org/dev/peps/pep-0604/)
 - `List[<type>]` (or `list[<type>]`)
-- `Set[<type>]`
+- `Set[<type>]` (or `set[<type>]`)
 - other `NamedTuple`s (recursively)
 
 I wrote this so that I don't have to repeatedly write boilerplate-y python code to validate/serialize/deserialize data. As a more extensive example of its usage, you can see my [`ttally`](https://github.com/seanbreckenridge/ttally) repo, which I use to track things like calories/water etc...
