@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import tempfile
+import warnings
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import NamedTuple, Optional, List, Set, Dict, Any
@@ -31,7 +32,7 @@ def test_int_converts_to_float_no_warning() -> None:
 
     p = P(a=5, b=5, c="test", d=datetime.now())
 
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         serialized = autotui.serialize_namedtuple(p)
         # not converted when serialized
         assert serialized["b"] == 5
@@ -71,6 +72,7 @@ class Def(NamedTuple):
     @staticmethod
     def type_use_values() -> Dict:
         return {str: "default"}
+
 
 def test_default_values_w_class() -> None:
     d = autotui.prompt_namedtuple(Def)
@@ -224,7 +226,7 @@ def test_leave_optional_collection_none() -> None:
 
 def test_default_value_on_non_optional_collection():
     loaded: Json = json.loads("{}")
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         l = autotui.deserialize_namedtuple(loaded, L)
     assert len(record) == 2
     assert (
@@ -245,7 +247,7 @@ class X(NamedTuple):
 
 def test_expected_key_warning() -> None:
     loaded = json.loads("{}")
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         x = autotui.deserialize_namedtuple(loaded, X)
     assert len(record) == 2
     assert "Expected key a on non-optional field" in str(record[0].message)
@@ -318,7 +320,7 @@ def test_no_value_for_collection_non_optional_warning() -> None:
 
 def test_null_in_containers_warns() -> None:
     loaded = json.loads('{"a": [1,null,3]}')
-    with pytest.warns(None, match=r"expected type int, found NoneType"):
+    with pytest.warns(Warning, match=r"expected type int, found NoneType"):
         x = autotui.deserialize_namedtuple(loaded, LL)
     assert x.a == [1, None, 3]
 
@@ -432,7 +434,7 @@ def test_custom_handles_serializers() -> None:
     with open(f.name) as fp:
         str_contents = fp.read()
 
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         readings_back = autotui.namedtuple_sequence_loads(str_contents, to=Reading)
     assert len(record) >= 1
     assert "No known way to deserialize" in str(record[0].message)
@@ -499,7 +501,7 @@ class Broken(object):
 
 
 def test_passed_non_namedtuple() -> None:
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         autotui.namedtuple_prompt_funcs(Broken)
 
     assert len(record) == 2
@@ -560,8 +562,29 @@ def test_hint_generics() -> None:
     # needed to check if we can type hint generics
     # https://www.python.org/dev/peps/pep-0585/
     above_39 = sys.version_info.major >= 3 and sys.version_info.minor >= 9
+    # or have unions like X | Y
+    # https://www.python.org/dev/peps/pep-0604/
+    above_310 = sys.version_info.major >= 3 and sys.version_info.minor >= 10
 
     if above_39:
         from autotui.typehelpers import strip_generic
 
         assert strip_generic(list[int]) == list
+
+    if above_310:
+        from autotui.typehelpers import get_union_args
+
+        assert None == get_union_args(5)
+        assert None == get_union_args(None)
+        assert None == get_union_args(int)
+        assert ([int], True) == get_union_args(int | None)
+        assert ([int], True) == get_union_args(Optional[int])
+        assert ([int, float], False) == get_union_args(int | float)
+        assert ([int, float, str], False) == get_union_args(int | float | str)
+        assert ([int, float, str], True) == get_union_args(int | float | str | None)
+        assert ([int], True) == get_union_args(int | None)
+        assert None == get_union_args(int)
+        assert ([int, X], True) == get_union_args(int | X | None)
+        assert ([int, str, X], True) == get_union_args(int | str | X | None)
+        assert ([int, X], False) == get_union_args(int | X)
+        assert ([int, X], True) == get_union_args(int | X | None)
