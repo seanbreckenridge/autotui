@@ -7,7 +7,8 @@ import click
 
 
 def edit_in_vim() -> str:
-    return click.edit(text=None, editor="vim").strip()
+    m = click.edit(text=None)
+    return m if m is None else m.strip()
 
 
 class JournalEntry(NamedTuple):
