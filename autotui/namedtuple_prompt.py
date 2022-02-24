@@ -1,6 +1,5 @@
 import functools
 from datetime import datetime
-from collections.abc import Container
 from typing import (
     Any,
     Optional,
@@ -110,7 +109,7 @@ def _prompt_many(
     from .prompts import prompt_ask_another
 
     def pm_lambda() -> AllowedContainers:
-        empty_return: Container = container_type([])
+        empty_return: AllowedContainers = container_type([])
         assert isinstance(empty_return, (list, set))
         # do-while-esque
         if ask_first:

@@ -2,7 +2,6 @@ import sys
 import typing
 import inspect
 from functools import lru_cache
-from collections.abc import Container
 import types
 from typing import (
     Tuple,
@@ -68,7 +67,7 @@ above_310 = sys.version_info.major >= 3 and sys.version_info.minor >= 10
 AllowedContainers = Union[List[T], Set[T]]
 
 
-def add_to_container(container: AllowedContainers, item: T) -> Container[T]:
+def add_to_container(container: AllowedContainers, item: T) -> AllowedContainers:
     if isinstance(container, list):
         container.append(item)
     elif isinstance(container, set):
@@ -77,7 +76,7 @@ def add_to_container(container: AllowedContainers, item: T) -> Container[T]:
         raise RuntimeError(
             f"{type(container)} is not a list/set, not sure how to add to"
         )
-    return cast(Container[T], container)
+    return container
 
 
 @cache
