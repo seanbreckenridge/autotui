@@ -1,8 +1,8 @@
 import functools
 from datetime import datetime
+from collections.abc import Container
 from typing import (
     Any,
-    Container,
     Optional,
     Union,
     List,
