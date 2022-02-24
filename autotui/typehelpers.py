@@ -2,11 +2,13 @@ import sys
 import typing
 import inspect
 from functools import lru_cache
+import types
 from typing import (
+    Tuple,
+    cast,
     Optional,
     TypeVar,
     Callable,
-    Tuple,
     Type,
     Union,
     List,
@@ -55,6 +57,13 @@ def cache(user_function):
     return lru_cache(maxsize=None)(user_function)
 
 
+# needed to check if we can type hint generics
+# https://www.python.org/dev/peps/pep-0585/
+# or have unions like X | Y
+# https://www.python.org/dev/peps/pep-0604/
+above_39 = sys.version_info.major >= 3 and sys.version_info.minor >= 9
+above_310 = sys.version_info.major >= 3 and sys.version_info.minor >= 10
+
 AllowedContainers = Union[List[T], Set[T]]
 
 
@@ -71,20 +80,30 @@ def add_to_container(container: AllowedContainers, item: T) -> AllowedContainers
 
 
 @cache
-def get_union_args(cls: Type) -> Optional[List[Type[Any]]]:
+def get_union_args(cls: Type) -> Optional[Tuple[List[Type[Any]], bool]]:
     """
     >>> get_union_args(Union[str, int])
-    [<class 'str'>, <class 'int'>]
+    ([<class 'str'>, <class 'int'>], False)
     >>> get_union_args(Optional[str])
-    [<class 'str'>]
+    ([<class 'str'>], True)
+    >>> get_union_args(str)
     """
-    if getattr(cls, "__origin__", None) != Union:
+    is_union_type = False
+    if above_310 and typing.get_origin(cls) == types.UnionType:  # type: ignore[attr-defined]
+        is_union_type = True
+    if not is_union_type:
+        origin_attr = getattr(cls, "__origin__", None)
+        if origin_attr == Union:
+            is_union_type = True
+
+    if not is_union_type:
         return None
 
     args: Type = cls.__args__
     arg_list: List[Type] = [e for e in args if e != type(None)]
+    is_opt = type(None) in args
     assert len(arg_list) > 0
-    return arg_list
+    return arg_list, is_opt
 
 
 # an estimation, someone could always trick
@@ -127,6 +146,15 @@ def is_union(cls: Type) -> bool:
     return get_union_args(cls) is not None
 
 
+def is_optional(cls: Type) -> bool:
+    res = get_union_args(cls)
+    if res is None:
+        return False
+    _, is_opt = res
+    assert isinstance(is_opt, bool)
+    return is_opt
+
+
 @cache
 def get_collection_types(cls: Type) -> Tuple[Type, Type]:
     """
@@ -143,32 +171,6 @@ def get_collection_types(cls: Type) -> Tuple[Type, Type]:
         len(internal) == 1
     ), f"Expected 1 argument for {container_type}, got {len(internal)}"
     return container_type, internal[0]
-
-
-@cache
-def strip_optional(cls: Type) -> Tuple[Type, bool]:
-    """
-    >>> from typing import Optional
-    >>> strip_optional(Optional[int])
-    (<class 'int'>, True)
-    >>> strip_optional(int)
-    (<class 'int'>, False)
-    >>> strip_optional(Optional[List[int]])
-    (typing.List[int], True)
-    """
-    is_opt: bool = False
-
-    args: Optional[List[Type[Any]]] = get_union_args(cls)
-    if args is not None and len(args) == 1:
-        cls = args[0]  # meh
-        is_opt = True
-
-    return (cls, is_opt)
-
-
-# needed to check if we can type hint generics
-# https://www.python.org/dev/peps/pep-0585/
-above_39 = sys.version_info.major >= 3 and sys.version_info.minor >= 9
 
 
 @cache
@@ -225,7 +227,7 @@ def is_supported_container(cls: Type) -> bool:
 
 
 @cache
-def inspect_signature_dict(nt: Union[Callable[..., Any]]) -> Dict[str, Type]:
+def inspect_signature_dict(nt: Callable[..., Any]) -> Dict[str, Type]:
     return {
         name: param.annotation
         for name, param in inspect.signature(nt).parameters.items()

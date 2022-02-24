@@ -18,8 +18,8 @@ from .typehelpers import (
     OptionalPromptFunction,
     PromptFunctionorValue,
     is_supported_container,
-    strip_optional,
     get_collection_types,
+    get_union_args,
     add_to_container,
     AllowedContainers,
     inspect_signature_dict,
@@ -110,6 +110,7 @@ def _prompt_many(
 
     def pm_lambda() -> AllowedContainers:
         empty_return: AllowedContainers = container_type([])
+        assert isinstance(empty_return, (list, set))
         # do-while-esque
         if ask_first:
             if not prompt_ask_another(attr_name):
@@ -122,7 +123,7 @@ def _prompt_many(
             dialog_title=f"Add another item to {attr_name}?",
         )
         while continue_prompting:
-            ret = add_to_container(ret, promptfunc())
+            ret = add_to_container(ret, promptfunc())  # type: ignore
             # interpolate the current list into the continue? prompt
             # TODO: truncate based on terminal column width?
             continue_prompting = continue_(prompt_msg=f"Currently => {ret}")
@@ -250,8 +251,18 @@ def namedtuple_prompt_funcs(
             )
             continue
 
+
+        # TODO: refactor this block? same in serialize
+        #
         # (<class 'int'>, False)
-        attr_type, is_optional = strip_optional(nt_annotation)
+        is_optional = False
+        attr_type = nt_annotation
+        # Optional[(<class 'int'>, False)]
+        res = get_union_args(nt_annotation)
+        if res is not None:
+            attr_types, is_optional = res
+            assert len(attr_types) == 1
+            attr_type = attr_types[0]
 
         # if the user specified a validator for this attribute name, use that
         if attr_name in _attr_validators:

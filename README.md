@@ -14,8 +14,8 @@ This has built-ins to prompt, validate and serialize:
 - `str`
 - `datetime`
 - `Enum`
-- `Optional[<type>]`
-- `List[<type>]`
+- `Optional[<type>]` (or `<type> | None`)
+- `List[<type>]` (or `list[<type>]`)
 - `Set[<type>]`
 - other `NamedTuple`s (recursively)
 
