@@ -106,6 +106,20 @@ def get_union_args(cls: Type) -> Optional[Tuple[List[Type[Any]], bool]]:
     return arg_list, is_opt
 
 
+def resolve_annotation_single(cls: Type) -> Tuple[Type, bool]:
+    """
+    Given the annotation type from a namedtuple, extract the type
+    Doesnt allow Unions other than Optional/None Unions
+    """
+    is_optional = False
+    res = get_union_args(cls)
+    if res is not None:
+        attr_types, is_optional = res
+        if len(attr_types) == 1:
+            cls = attr_types[0]
+    return cls, is_optional
+
+
 # an estimation, someone could always trick
 # this if they really wanted to...
 # this should be passed the NamedTuple object,

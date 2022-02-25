@@ -19,11 +19,11 @@ from .typehelpers import (
     PromptFunctionorValue,
     is_supported_container,
     get_collection_types,
-    get_union_args,
     add_to_container,
     AllowedContainers,
     inspect_signature_dict,
     is_namedtuple_type,
+    resolve_annotation_single,
 )
 from .warn import warn
 
@@ -251,17 +251,8 @@ def namedtuple_prompt_funcs(
             )
             continue
 
-        # TODO: refactor this block? same in serialize
-        #
         # (<class 'int'>, False)
-        is_optional = False
-        attr_type = nt_annotation
-        # Optional[(<class 'int'>, False)]
-        res = get_union_args(nt_annotation)
-        if res is not None:
-            attr_types, is_optional = res
-            assert len(attr_types) == 1
-            attr_type = attr_types[0]
+        attr_type, is_optional = resolve_annotation_single(nt_annotation)
 
         # if the user specified a validator for this attribute name, use that
         if attr_name in _attr_validators:

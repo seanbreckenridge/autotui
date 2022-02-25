@@ -6,7 +6,7 @@ from .typehelpers import (
     is_supported_container,
     get_collection_types,
     is_primitive,
-    get_union_args,
+    resolve_annotation_single,
     PrimitiveType,
     inspect_signature_dict,
     is_namedtuple_type,
@@ -84,14 +84,7 @@ def serialize_namedtuple(
     for attr_name, nt_annotation in inspect_signature_dict(nt.__class__).items():
 
         # (<class 'int'>, False)
-        is_optional = False
-        attr_type = nt_annotation
-        # Optional[(<class 'int'>, False)]
-        res = get_union_args(nt_annotation)
-        if res is not None:
-            attr_types, is_optional = res
-            assert len(attr_types) == 1
-            attr_type = attr_types[0]
+        attr_type, is_optional = resolve_annotation_single(nt_annotation)
 
         attr_value = getattr(nt, attr_name)
 
@@ -208,14 +201,7 @@ def deserialize_namedtuple(
 
     for attr_name, nt_annotation in inspect_signature_dict(to).items():
         # (<class 'int'>, False)
-        is_optional = False
-        attr_type = nt_annotation
-        # Optional[(<class 'int'>, False)]
-        res = get_union_args(nt_annotation)
-        if res is not None:
-            attr_types, is_optional = res
-            assert len(attr_types) == 1
-            attr_type = attr_types[0]
+        attr_type, is_optional = resolve_annotation_single(nt_annotation)
 
         # could be None
         loaded_value: Any = obj.get(attr_name)
