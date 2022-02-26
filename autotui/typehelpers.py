@@ -5,7 +5,6 @@ from functools import lru_cache
 import types
 from typing import (
     Tuple,
-    cast,
     Optional,
     TypeVar,
     Callable,

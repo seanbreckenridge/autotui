@@ -30,6 +30,7 @@ setup(
         "testing": [
             "pytest",
             "mypy",
+            "flake8",
         ],
         "optional": ["orjson"],
     },
