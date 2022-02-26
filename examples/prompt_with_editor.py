@@ -20,6 +20,6 @@ class JournalEntry(NamedTuple):
 if __name__ == "__main__":
     load_prompt_and_writeback(
         JournalEntry,
-        "~/Documents/journal.json",
+        "~/Documents/journal.yaml",
         attr_use_values={"content": edit_in_vim},
     )
