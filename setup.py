@@ -1,7 +1,8 @@
 import io
+from pathlib import Path
 from setuptools import setup, find_packages
 
-requirements = ["prompt_toolkit>=3.0", "dateparser"]
+requirements = Path("requirements.txt").read_text().splitlines()
 
 # Use the README.md content for the long description:
 with io.open("README.md", encoding="utf-8") as fo:
@@ -10,11 +11,11 @@ with io.open("README.md", encoding="utf-8") as fo:
 pkg = "autotui"
 setup(
     name=pkg,
-    version="0.3.9",
+    version="0.4.0",
     url="https://github.com/seanbreckenridge/autotui",
     author="Sean Breckenridge",
     author_email="seanbrecke@gmail.com",
-    description=("""helpers for creating TUIs with persistent typed data"""),
+    description=("""quickly create UIs to interactively prompt, validate, and persist python objects to disk (JSON/YAML) and back using type hints"""),
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",

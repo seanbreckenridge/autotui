@@ -3,6 +3,7 @@ import os
 import json
 import tempfile
 import warnings
+from pathlib import Path
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import NamedTuple, Optional, List, Set, Dict, Any
@@ -10,6 +11,7 @@ from enum import Enum
 
 import pytest
 import autotui
+from yaml import safe_load
 from autotui.exceptions import AutoTUIException
 from autotui.shortcuts import load_from, dump_to
 
@@ -457,7 +459,7 @@ def test_custom_handles_serializers() -> None:
 def test_shortcuts() -> None:
     cur = datetime.now()
     t = Temperature("20C")
-    f = tempfile.NamedTemporaryFile(delete=False)
+    f = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
 
     type_serializers = {Temperature: serialize_temp}
     attr_deserializers = {"temp": deserialize_temp}
@@ -475,6 +477,31 @@ def test_shortcuts() -> None:
 
     # delete file
     os.unlink(f.name)
+
+    y = tempfile.NamedTemporaryFile(delete=False, suffix=".yaml")
+
+    dump_to(readings, f.name, type_serializers=type_serializers)
+
+    # make sure can load/dumped yaml properly
+    txt = Path(y.name).read_text()
+    safe_load(txt)
+    with pytest.raises(ValueError, match="Expecting value: line 1 column 1"):
+        json.loads(txt)
+
+    yr: List[Reading] = load_from(
+        Reading, f.name, attr_deserializers=attr_deserializers
+    )
+    assert len(yr) == 1
+    assert lr[0].temp == yr[0].temp
+    assert lr[0].when.timestamp() == yr[0].when.timestamp()
+
+    # set format explicitly
+    yr_explicit: List[Reading] = load_from(
+        Reading, f.name, format="yaml", attr_deserializers=attr_deserializers
+    )
+
+    assert yr == yr_explicit
+    assert yr == lr
 
 
 class Action(NamedTuple):

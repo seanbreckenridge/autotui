@@ -16,6 +16,7 @@ from . import (
     namedtuple_sequence_dumps,
     namedtuple_sequence_load,
 )
+from .fileio import Format
 from .typehelpers import PrimitiveType, NT, T, PromptFunctionorValue
 
 
@@ -28,6 +29,15 @@ def _normalize(_path: Union[Path, str]) -> Path:
     return p.expanduser().absolute()
 
 
+def _detect_format(path: Path, format: Optional[Format]) -> Optional[Format]:
+    ext = path.suffix
+    if ext == ".json":
+        format = "json"
+    elif ext in [".yml", ".yaml"]:
+        format = "yaml"
+    return format
+
+
 # doesnt expose underlying kwargs from namedtuple_sequence_dump
 # and namedtuple_sequence_load on purpose -- so that its less
 # likely its mistyped. Can always use the underlying
@@ -37,21 +47,29 @@ def _normalize(_path: Union[Path, str]) -> Path:
 def dump_to(
     items: List[NT],
     path: Union[Path, str],
+    *,
     attr_serializers: Optional[Dict[str, Callable[[T], PrimitiveType]]] = None,
     type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
+    format: Optional[Format] = None,
 ) -> None:
     """
     Takes a list of NamedTuples (or subclasses) and a path to a file.
     Serializes the items into a string, using the attr_serializers and
     type_serializers to handle custom types if specified.
 
+    If format is unset, uses the file extension to detect the type
+
     If serialization succeeds, writes to the file.
     """
     p = _normalize(path)
+    format = _detect_format(p, format)
     # serialize to string before opening file
     # if serialization fails, file is left alone
     nt_string: str = namedtuple_sequence_dumps(
-        items, attr_serializers=attr_serializers, type_serializers=type_serializers
+        items,
+        attr_serializers=attr_serializers,
+        type_serializers=type_serializers,
+        format=format,
     )
     with p.open(mode="w") as f:
         f.write(nt_string)
@@ -62,8 +80,10 @@ def dump_to(
 def load_from(
     to: Type[NT],
     path: Union[Path, str],
+    *,
     attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
     type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None,
+    format: Optional[Format] = None,
     allow_empty: bool = False,
 ) -> List[NT]:
     """
@@ -72,12 +92,15 @@ def load_from(
     using the attr_deserializers and type_deserializers to handle
     custom types if specified.
 
+    If format is unset, uses the file extension to detect the type
+
     If allow_empty is True, this returns an empty list if the file
     didn't exist
 
     Returns the list of items read from the file.
     """
     p: Path = _normalize(path)
+    format = _detect_format(p, format)
     try:
         with p.open(mode="r") as f:
             items: List[NT] = namedtuple_sequence_load(
@@ -85,6 +108,7 @@ def load_from(
                 to,
                 attr_deserializers=attr_deserializers,
                 type_deserializers=type_deserializers,
+                format=format,
             )
     except FileNotFoundError as fne:
         if allow_empty:
@@ -107,12 +131,15 @@ def load_prompt_and_writeback(
     type_serializers: Optional[Dict[Type, Callable[[Any], PrimitiveType]]] = None,
     attr_deserializers: Optional[Dict[str, Callable[[PrimitiveType], Any]]] = None,
     type_deserializers: Optional[Dict[Type, Callable[[PrimitiveType], Any]]] = None,
+    format: Optional[Format] = None,
     prompt_function: Optional[Callable[..., NT]] = None,
 ) -> List[NT]:
     """
     An entry point to entire library, essentially.
 
     Load the NamedTuples from the JSON file specified by 'path' and 'to'
+
+    If format is unset, uses the file extension to detect the type
 
     If the file doesn't exist and the create_file flag is True, ignores the
     FileNotFound error when trying to read from the file.
@@ -126,10 +153,17 @@ def load_prompt_and_writeback(
     accepts validators, serializers and deserializers for each step of the process.
     """
     p: Path = _normalize(path)
+    format = _detect_format(p, format)
     # read from file
     items: List[NT] = []
     try:
-        items = load_from(to, p, attr_deserializers, type_deserializers)
+        items = load_from(
+            to,
+            p,
+            attr_deserializers=attr_deserializers,
+            type_deserializers=type_deserializers,
+            format=format,
+        )
     except FileNotFoundError as fne:
         if not create_file:
             raise fne
@@ -145,5 +179,11 @@ def load_prompt_and_writeback(
     )
     items.append(new_item)
     # dump back to file
-    dump_to(items, p, attr_serializers, type_serializers)
+    dump_to(
+        items,
+        p,
+        attr_serializers=attr_serializers,
+        type_serializers=type_serializers,
+        format=format,
+    )
     return items

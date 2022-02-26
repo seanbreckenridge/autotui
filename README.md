@@ -2,7 +2,7 @@
 
 [![PyPi version](https://img.shields.io/pypi/v/autotui.svg)](https://pypi.python.org/pypi/autotui) [![Python 3.8|3.9|3.10](https://img.shields.io/pypi/pyversions/autotui.svg)](https://pypi.python.org/pypi/autotui) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-This uses type hints to convert [`NamedTuple`](https://docs.python.org/3.9/library/typing.html#typing.NamedTuple)'s (short struct-like classes) to JSON, and back to python objects.
+This uses type hints to convert [`NamedTuple`](https://docs.python.org/3.9/library/typing.html#typing.NamedTuple)'s (short struct-like classes) to JSON/YAML, and back to python objects.
 
 It also wraps [`prompt_toolkit`](https://python-prompt-toolkit.readthedocs.io/en/master/index.html) to prompt the user and validate the input for common types, and is extendible to whatever types you want.
 
@@ -160,6 +160,27 @@ class JournalEntry(NamedTuple):
 # pulls attr_use_values from the function
 prompt_namedtuple(JournalEntry, "~/Documents/journal.json")
 ```
+
+### Yaml
+
+Since YAML is a superset of JSON, this can also be used with YAML files. `autotui.shortcuts` will automatically decode/write to YAML files based on the file extension.
+
+```python
+# using the water example above
+if __name__ == "__main__":
+    load_prompt_and_writeback(Water, "~/.local/share/water.yaml")
+```
+
+Results in:
+
+```yaml
+- at: 1645840523
+  glass_count: 1.0
+- at: 1645839340
+  glass_count: 1.0
+```
+
+You can also pass `format="yaml"` to the `namedtuple_sequence_dumps/namedtuple_sequence_loads` functions (shown below)
 
 ### Custom Types
 
