@@ -15,7 +15,9 @@ setup(
     url="https://github.com/seanbreckenridge/autotui",
     author="Sean Breckenridge",
     author_email="seanbrecke@gmail.com",
-    description=("""quickly create UIs to interactively prompt, validate, and persist python objects to disk (JSON/YAML) and back using type hints"""),
+    description=(
+        """quickly create UIs to interactively prompt, validate, and persist python objects to disk (JSON/YAML) and back using type hints"""
+    ),
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
@@ -29,6 +31,7 @@ setup(
             "pytest",
             "mypy",
         ],
+        "optional": ["orjson"],
     },
     keywords="data prompt namedtuple",
     classifiers=[
