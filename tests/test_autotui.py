@@ -565,8 +565,8 @@ def test_enum_serialization() -> None:
     ds = autotui.serialize_namedtuple(d)
     ds2 = autotui.serialize_namedtuple(d2)
 
-    assert ds["choice"] == 1
-    assert ds2["choice"] == "something"
+    assert ds["choice"] == "x"
+    assert ds2["choice"] == "z"
 
     assert d == autotui.deserialize_namedtuple(ds, DAT)
     assert d2 == autotui.deserialize_namedtuple(ds2, DAT)

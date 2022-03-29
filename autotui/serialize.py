@@ -46,7 +46,7 @@ def _serialize_type(
             # assumes that the enumeration value the user provided is JSON-serializable
             if isinstance(value, Enum):
                 # https://docs.python.org/3/library/enum.html#programmatic-access-to-enumeration-members-and-their-attributes
-                return value.value
+                return value.name
             else:
                 # this isn't an enum type, but the user specified the direct value, so we're
                 # assuming that its a valid value for this enumeration. The value is dumped,
