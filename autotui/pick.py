@@ -27,7 +27,7 @@ def _remember(
     """
     convert each namedtuple to a string representation, using either
     the user provided key function, or the default by converting it to
-    a string and removing newlinesS
+    a string and removing newlines
 
     this 'saves' the string representation and the NT object itself in memory
     before yielding, which means the string line the users picks can later on
@@ -50,7 +50,7 @@ def pick_namedtuple(
         import pyfzf
     except ImportError as e:
         print(
-            "Could not import fzf wrapper, install with 'pip install pyfzf_iter'",
+            "Could not import fzf wrapper, install with 'pip install pyfzf-iter'",
             file=sys.stderr,
         )
         raise e
