@@ -21,3 +21,4 @@ from .fileio import (
     namedtuple_sequence_load,
     namedtuple_sequence_loads,
 )
+from .options import options

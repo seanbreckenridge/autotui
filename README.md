@@ -85,12 +85,26 @@ if __name__ == "__main__":
 
 A lot of my usage of this only ever uses 3 functions in the [`autotui.shortcuts`](https://github.com/seanbreckenridge/autotui/blob/master/autotui/shortcuts.py) module; `dump_to` to dump a sequence of my `NamedTuple`s to a file, `load_from` to do the opposite, and `load_prompt_and_writeback`, to load values in, prompt me, and write back to the file.
 
-#### Datetime prompt
+#### Enabling Options
 
-There are two versions of the `datetime` prompt
+Some options/features can be enabled using global environment variables, or by using a contextmanager to temporarily enable certain prompts/features.
+
+As an example, there are two versions of the `datetime` prompt
 
 - The one you see above using a dialog
-- A live version which displays the parsed datetime while typing. Since that can cause some lag, it can be enabled by setting the `AUTOTUI_DATETIME_LIVE` environment variable, e.g., add `export AUTOTUI_DATETIME_LIVE=1` to your `.bashrc`/`.zshrc`
+- A live version which displays the parsed datetime while typing. Since that can cause some lag, it can be enabled by setting the `LIVE_DATETIME` option.
+
+You can enable that by:
+
+- setting the `AUTOTUI_LIVE_DATETIME` (prefix the name of the option with `AUTOTUI_`) environment variable, e.g., add `export AUTOTUI_LIVE_DATETIME=1` to your `.bashrc`/`.zshrc`
+- using the `options` contextmanager:
+
+```python
+import autotui
+
+with autotui.options("LIVE_DATETIME"):
+    autotui.prompt_namedtuple(...)
+```
 
 ### Partial prompts
 

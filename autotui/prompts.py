@@ -11,12 +11,13 @@ from prompt_toolkit.validation import (
     Validator,
     ThreadedValidator,
     ValidationError,
-    Document,
 )
+from prompt_toolkit.document import Document
 from prompt_toolkit.completion import FuzzyWordCompleter
 from prompt_toolkit.shortcuts import button_dialog, input_dialog, message_dialog
 
 from .typehelpers import T, enum_attribute_dict
+from .options import is_enabled, Option
 
 # remove pytz warning from dateparser module
 warnings.filterwarnings("ignore", "The localize method is no longer necessary")
@@ -170,8 +171,8 @@ def prompt_datetime(
     import dateparser  # type: ignore[import]
 
     # can cause lag on slower machines because of the constant
-    # recomputes - put it behind a envvar-enabled feature
-    if "AUTOTUI_DATETIME_LIVE" in os.environ:
+    # recomputes - put it behind a feature flag
+    if is_enabled(Option.LIVE_DATETIME):
         dt_validator = LiveDatetimeValidator(parser_func=dateparser.parse)
         resp = prompt(
             m,
@@ -239,7 +240,6 @@ def prompt_enum(
     enum_cls: Type[Enum],
     for_attr: Optional[str] = None,
     prompt_msg: Optional[str] = None,
-    dialog_title: str = "===",
 ) -> Enum:
     m: str = create_prompt_string(str, for_attr, prompt_msg)
     enum_mapping: Dict[str, Enum] = enum_attribute_dict(enum_cls)
