@@ -29,8 +29,6 @@ To install with pip, run:
 
     pip install autotui
 
----
-
 As an example, if I want to log whenever I drink water to a file:
 
 ```python
@@ -195,6 +193,20 @@ Results in:
 ```
 
 You can also pass `format="yaml"` to the `namedtuple_sequence_dumps/namedtuple_sequence_loads` functions (shown below)
+
+### Picking
+
+This has a basic [`fzf`](https://github.com/junegunn/fzf) picker using [`pyfzf-iter`](https://github.com/seanbreckenridge/pyfzf), which lets you pick one item from a list/iterator:
+
+```python
+from autotui import pick_namedtuple
+from autotui.shortcuts import load_from
+
+picked = pick_namedtuple(load_from(Water, "~/.local/share/water.json"))
+print(picked)
+```
+
+To install the required dependencies, install [`fzf`](https://github.com/junegunn/fzf) and `pip install 'autotui[optional]'`
 
 ### Custom Types
 
