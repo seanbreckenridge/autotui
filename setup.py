@@ -32,7 +32,7 @@ setup(
             "mypy",
             "flake8",
         ],
-        "optional": ["orjson"],
+        "optional": ["orjson", "pyfzf-iter"],
     },
     keywords="data prompt namedtuple",
     classifiers=[
