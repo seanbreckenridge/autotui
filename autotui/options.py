@@ -1,5 +1,5 @@
 import os
-from typing import Set, Generator, Mapping, Optional, List
+from typing import Set, Generator, Dict, Optional, List, Union
 from collections import defaultdict
 from enum import auto, Enum
 from contextlib import contextmanager
@@ -25,18 +25,19 @@ class Option(Enum):
 
 # set which gets modified by contextmanager
 # to enable/disable flags
-_ENABLED: Mapping[Option, Set[object]] = defaultdict(set)
+_ENABLED: Dict[Option, Set[object]] = defaultdict(set)
 
 
 def str_to_option(op: str) -> Optional[Option]:
     try:
-        return getattr(Option, op.upper())
+        val: Option = getattr(Option, op.upper())
+        return val
     except AttributeError:
         return None
 
 
 @contextmanager
-def options(*opts: Option) -> Generator[None, None, None]:
+def options(*opts: Union[str, Option]) -> Generator[None, None, None]:
     """
     A contextmanager (meant to be used with a 'with' block) to temporarily enable options
     This way, disparate parts of the library don't have to have optional keyword arguments
