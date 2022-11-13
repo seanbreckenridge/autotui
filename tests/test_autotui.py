@@ -3,6 +3,7 @@ import os
 import json
 import tempfile
 import warnings
+from decimal import Decimal
 from pathlib import Path
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -615,3 +616,17 @@ def test_hint_generics() -> None:
         assert ([int, str, X], True) == get_union_args(int | str | X | None)
         assert ([int, X], False) == get_union_args(int | X)
         assert ([int, X], True) == get_union_args(int | X | None)
+
+
+class Dec(NamedTuple):
+    x: Decimal
+    y: int
+
+
+def test_decimal() -> None:
+    d = Dec(x=Decimal("5"), y=2)
+    ser = autotui.serialize_namedtuple(d)
+    assert ser == {"x": "5", "y": 2}
+    d2 = autotui.deserialize_namedtuple(ser, to=Dec)
+    assert isinstance(d2.x, Decimal)
+    assert d == d2

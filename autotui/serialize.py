@@ -1,5 +1,6 @@
 from typing import Dict, Type, Callable, Any, Union, Optional
 from datetime import datetime, timezone
+from decimal import Decimal
 from enum import Enum
 
 from .typehelpers import (
@@ -54,6 +55,8 @@ def _serialize_type(
                 return value
         elif is_primitive(cls):
             return value  # all other primitives are JSON compatible
+        elif cls == Decimal:
+            return str(value)
         elif is_namedtuple_type(cls):
             # if the attribute for this value is another NamedTuple,
             # recursively serialize the value
@@ -162,6 +165,8 @@ def _deserialize_type(
         return float(value)
     elif cls == str:
         return str(value)
+    elif cls == Decimal:
+        return Decimal(value)
     elif cls == bool:
         if type(value) == str:
             lval = value.lower()

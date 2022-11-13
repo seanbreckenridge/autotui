@@ -14,6 +14,7 @@ This has built-ins to prompt, validate and serialize:
 - `str`
 - `datetime`
 - `Enum`
+- `Decimal`
 - `Optional[<type>]` [(or `<type> | None`)](https://www.python.org/dev/peps/pep-0604/)
 - `List[<type>]` (or `list[<type>]`)
 - `Set[<type>]` (or `set[<type>]`)
