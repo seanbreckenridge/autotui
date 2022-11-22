@@ -1,6 +1,5 @@
 import json
 from io import StringIO
-from yaml import safe_dump, safe_load
 
 from typing import List, Dict, Callable, Type, Any, TextIO, Optional, Literal
 
@@ -34,6 +33,8 @@ def namedtuple_sequence_dumps(
     if format == "json":
         return json.dumps(s_obj, **_pretty_print(kwargs))
     elif format == "yaml":
+        from yaml import safe_dump
+
         buf = StringIO()
         safe_dump(s_obj, buf, **kwargs)
         return buf.getvalue()
@@ -88,9 +89,12 @@ def namedtuple_sequence_loads(
     """
     Load a list of namedtuples specificed by 'to' from a JSON string
     """
+
     if format == "json":
         loaded_obj = _load_json(nt_string)
     elif format == "yaml":
+        from yaml import safe_load
+
         loaded_obj = safe_load(nt_string)
     else:
         raise ValueError("unset format while trying to dump")
