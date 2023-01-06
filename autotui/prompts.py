@@ -222,16 +222,6 @@ def _create_enum_word_targets(enum_mapping: Dict[str, Enum]) -> Dict[str, Enum]:
     for k, v in enum_mapping.items():
         if k not in enum_desc_map:
             enum_desc_map[k] = v
-    # casefold (lowercase) key
-    for k, v in enum_mapping.items():
-        kc = k.casefold()
-        if kc not in enum_mapping.items():
-            enum_desc_map[kc] = v
-    # string representation of the value
-    for k, v in enum_mapping.items():
-        sv = str(v)
-        if sv not in enum_desc_map:
-            enum_desc_map[sv] = v
     return enum_desc_map
 
 
