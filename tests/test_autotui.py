@@ -32,7 +32,6 @@ class O(NamedTuple):
 
 
 def test_int_converts_to_float_no_warning() -> None:
-
     p = P(a=5, b=5, c="test", d=datetime.now())
 
     with warnings.catch_warnings(record=True) as record:
@@ -50,7 +49,6 @@ def test_int_converts_to_float_no_warning() -> None:
 
 
 def test_default_values() -> None:
-
     now = datetime.now()
     current_datetime_func = lambda: now
 

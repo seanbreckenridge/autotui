@@ -244,7 +244,6 @@ def namedtuple_prompt_funcs(
     # [('a', <Parameter "a: int">), ('b', <Parameter "b: float">), ('c', <Parameter "c: str">)]
     # nt_annotation is the type
     for attr_name, nt_annotation in inspect_signature_dict(nt).items():
-
         if attr_name in _attr_use_values:
             prompt_functions[attr_name] = _create_callable_from_user(
                 _attr_use_values[attr_name]

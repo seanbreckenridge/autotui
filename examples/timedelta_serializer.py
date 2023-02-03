@@ -7,6 +7,7 @@ from autotui import (
     AutoHandler,
 )
 
+
 # handle validating the user input
 # can throw a ValueError
 def _timedelta(user_input: str) -> timedelta:

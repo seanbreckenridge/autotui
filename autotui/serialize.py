@@ -85,7 +85,6 @@ def serialize_namedtuple(
     json_dict: Dict[str, Any] = {}
 
     for attr_name, nt_annotation in inspect_signature_dict(nt.__class__).items():
-
         # (<class 'int'>, False)
         attr_type, is_optional = resolve_annotation_single(nt_annotation)
 

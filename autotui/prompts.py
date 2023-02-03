@@ -63,7 +63,6 @@ def create_prompt_string(
 
 
 def prompt_str(for_attr: Optional[str] = None, prompt_msg: Optional[str] = None) -> str:
-
     m: str = create_prompt_string(str, for_attr, prompt_msg)
     return prompt(m)
 
@@ -112,7 +111,6 @@ def prompt_bool(
     prompt_msg: Optional[str] = None,
     dialog_title: str = "===",
 ) -> bool:
-
     m: str = create_prompt_string(bool, for_attr, prompt_msg)
     return button_dialog(
         title=dialog_title,

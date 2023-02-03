@@ -3,6 +3,7 @@ from typing import NamedTuple, Optional, List
 
 from autotui import prompt_namedtuple
 
+
 # describe a meeting with one or more people
 class Meeting(NamedTuple):
     when: datetime
