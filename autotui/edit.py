@@ -44,6 +44,7 @@ def edit_namedtuple(nt: NT, print_namedtuple: bool = False, loop: bool = False, 
     """Edit a namedtuple."""
     assert is_namedtuple_obj(nt), f"nt {nt} is not a namedtuple"
     nt_dict: Dict[str, Any] = nt._asdict()  # type: ignore
+    _attr_use_values = kwargs.pop("attr_use_values", {})
     while True:
         assert isinstance(nt_dict, dict)
         keys = list(nt_dict.keys())
@@ -57,6 +58,11 @@ def edit_namedtuple(nt: NT, print_namedtuple: bool = False, loop: bool = False, 
         choice = keys[key]
         assert choice in nt_dict, f"choice {choice} not in nt_dict {nt_dict}"
         partial_values = {k: v for k, v in nt_dict.items() if k != choice}
+        # if user passed in attr_use_values, update it on top of the nt._asdict()
+        if _attr_use_values:
+            for k, v in _attr_use_values.items():
+                if k in partial_values:
+                    partial_values[k] = v
         nt = prompt_namedtuple(type(nt), attr_use_values=partial_values, **kwargs)
         if loop is False:
             return nt
