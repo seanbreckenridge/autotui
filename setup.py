@@ -32,9 +32,10 @@ setup(
             "mypy",
             "flake8",
         ],
+        "edit": ["click"],
         "pick": ["pyfzf-iter"],
         "json": ["orjson"],
-        "optional": ["orjson", "pyfzf-iter"],
+        "optional": ["orjson", "pyfzf-iter", "click"],
     },
     keywords="data prompt namedtuple",
     classifiers=[

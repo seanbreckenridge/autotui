@@ -214,6 +214,36 @@ print(picked)
 
 To install the required dependencies, install [`fzf`](https://github.com/junegunn/fzf) and `pip install 'autotui[pick]'`
 
+### Editing
+
+This also provides a basic editor, which lets you edit a single field of a `NamedTuple`.
+
+```
+$ python3 ./examples/edit.py
+Water(at=datetime.datetime(2023, 3, 5, 18, 55, 59, 519320), glass_count=1)
+Which field to edit:
+
+	1. at
+	2. glass_count
+
+'glass_count' (float) > 30
+Water(at=datetime.datetime(2023, 3, 5, 18, 55, 59, 519320), glass_count=30.0)
+```
+
+In python:
+
+```python
+from autotui.edit import edit_namedtuple
+
+water = edit_namedtuple(water, print_namedtuple=True)
+# can also 'loop', to edit multiple fields
+water = edit_namedtuple(water, print_namedtuple=True, loop=True)
+```
+
+Any additional arguments to `edit_namedtuple` are passed to `prompt_namedtuple`, so you can specify `type_validators` to `attr_validators` to prompt in some custom way
+
+To install, `pip install 'autotui[edit]'` or `pip install click`
+
 ### Custom Types
 
 If you want to support custom types, or specify a special way to serialize another NamedTuple recursively, you can specify `type_validators`, and `type_[de]serializer` to handle the validation, serialization, deserialization for that type/attribute name.
