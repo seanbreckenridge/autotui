@@ -1,4 +1,4 @@
-from typing import Sequence, Any
+from typing import Sequence, Any, Dict
 from functools import partial
 from pprint import pformat
 
