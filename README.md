@@ -207,7 +207,7 @@ picked = pick_namedtuple(load_from(Water, "~/.local/share/water.json"))
 print(picked)
 ```
 
-To install the required dependencies, install [`fzf`](https://github.com/junegunn/fzf) and `pip install 'autotui[optional]'`
+To install the required dependencies, install [`fzf`](https://github.com/junegunn/fzf) and `pip install 'autotui[pick]'`
 
 ### Custom Types
 

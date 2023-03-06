@@ -32,6 +32,8 @@ setup(
             "mypy",
             "flake8",
         ],
+        "pick": ["pyfzf-iter"],
+        "json": ["orjson"],
         "optional": ["orjson", "pyfzf-iter"],
     },
     keywords="data prompt namedtuple",
