@@ -8,6 +8,7 @@ from contextlib import contextmanager
 class Option(Enum):
     DATETIME_LIVE = auto()
     LIVE_DATETIME = DATETIME_LIVE  # here for backwards compatibility
+    CONVERT_UNKNOWN_ENUM_TO_NONE = auto()
 
     @property
     def names(self) -> List[str]:
@@ -73,7 +74,10 @@ def options(*opts: Union[str, Option]) -> Generator[None, None, None]:
     finally:
         # remove options
         for opt, obj_set in list(_ENABLED.items()):
-            obj_set.remove(this_call)
+            try:
+                obj_set.remove(this_call)
+            except KeyError:
+                pass
             # if no items left in the value set, no longer in any contexts
             # which enabled the option, remove it
             if len(obj_set) == 0:

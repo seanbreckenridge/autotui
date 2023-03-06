@@ -105,6 +105,11 @@ with autotui.options("LIVE_DATETIME"):
     autotui.prompt_namedtuple(...)
 ```
 
+Options:
+
+- `LIVE_DATETIME`: Enables the live datetime prompt
+- `CONVERT_UNKNOWN_ENUM_TO_NONE`: If an enum value is not found on the enumeration (e.g. you remove some enum value), convert it to `None` instead of raising a `ValueError`
+
 ### Partial prompts
 
 If you want to prompt for only a few fields, you can supply the `attr_use_values` or `type_use_values` to supply default values:

@@ -15,6 +15,7 @@ import autotui
 from yaml import safe_load
 from autotui.exceptions import AutoTUIException
 from autotui.shortcuts import load_from, dump_to
+from autotui.options import options
 
 Json = Dict[str, Any]
 
@@ -628,3 +629,27 @@ def test_decimal() -> None:
     d2 = autotui.deserialize_namedtuple(ser, to=Dec)
     assert isinstance(d2.x, Decimal)
     assert d == d2
+
+
+class UEnum(Enum):
+    x = 1
+    y = 2
+
+
+class UDAT(NamedTuple):
+    choice: UEnum
+
+
+def test_removing_enum_value() -> None:
+    assert autotui.deserialize_namedtuple({"choice": "x"}, UDAT) == UDAT(choice=UEnum.x)
+
+    with pytest.raises(ValueError, match="Could not find z on Enumeration"):
+        autotui.deserialize_namedtuple({"choice": "z"}, UDAT)
+
+    with_none = UDAT(choice=None)  # type: ignore
+    with options("CONVERT_UNKNOWN_ENUM_TO_NONE"):
+        assert autotui.deserialize_namedtuple({"choice": "z"}, UDAT) == with_none
+
+    # make sure it raises again after the option is turned off
+    with pytest.raises(ValueError, match="Could not find z on Enumeration"):
+        autotui.deserialize_namedtuple({"choice": "z"}, UDAT)

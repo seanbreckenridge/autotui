@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 
+from .options import is_enabled, Option
 from .typehelpers import (
     is_supported_container,
     get_collection_types,
@@ -157,7 +158,15 @@ def _deserialize_type(
         # serialize into epoch time
         return datetime.fromtimestamp(int(value), timezone.utc)
     elif issubclass(cls, Enum):
-        return enum_getval(cls, value)
+        if is_enabled(Option.CONVERT_UNKNOWN_ENUM_TO_NONE):
+            try:
+                return enum_getval(cls, value)
+            except ValueError as v:
+                if "Could not find" in str(v):
+                    return None
+                raise v
+        else:
+            return enum_getval(cls, value)
     elif cls == int:
         return int(value)
     elif cls == float:
