@@ -6,6 +6,20 @@ This uses type hints to convert [`NamedTuple`](https://docs.python.org/3.9/libra
 
 It also wraps [`prompt_toolkit`](https://python-prompt-toolkit.readthedocs.io/en/master/index.html) to prompt the user and validate the input for common types, and is extendible to whatever types you want.
 
+- [Supported Types](#supported-types)
+- [Install](#install)
+- [Usage](#usage)
+  * [Enabling Options](#enabling-options)
+  * [Partial prompts](#partial-prompts)
+  * [YAML](#yaml)
+  * [Picking items](#picking)
+  * [Editing items](#editing)
+  * [Custom types](#custom-types)
+  * [Custom prompts](#custom-prompts)
+- [Testing](#testing)
+
+## Supported Types
+
 This has built-ins to prompt, validate and serialize:
 
 - `int`
@@ -29,6 +43,8 @@ This requires `python3.8+`, specifically for modern [`typing`](https://docs.pyth
 To install with pip, run:
 
     pip install autotui
+
+## Usage
 
 As an example, if I want to log whenever I drink water to a file:
 
@@ -363,7 +379,7 @@ There are lots of examples on how this is handled/edge-cases in the [`tests`](./
 
 You can also take a look at the [`examples`](./examples)
 
-# Tests
+# Testing
 
 ```bash
 git clone https://github.com/seanbreckenridge/autotui
