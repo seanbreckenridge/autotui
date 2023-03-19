@@ -14,8 +14,7 @@ It also wraps [`prompt_toolkit`](https://python-prompt-toolkit.readthedocs.io/en
   * [YAML](#yaml)
   * [Picking items](#picking)
   * [Editing items](#editing)
-  * [Custom types](#custom-types)
-  * [Custom prompts](#custom-prompts)
+  * [Custom types/prompting](#custom-types)
 - [Testing](#testing)
 
 ## Supported Types
