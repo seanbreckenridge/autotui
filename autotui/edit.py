@@ -15,7 +15,7 @@ def _ui_getchar_pick(choices: Sequence[str], prompt: str = "Select from: ") -> i
     Basic menu allowing the user to select one of the choices
     returns the index the user chose
     """
-    assert len(choices) > 0, "Didnt receive any choices to prompt!"
+    assert len(choices) > 0, "Didn't receive any choices to prompt!"
     eprint(prompt + "\n")
 
     # prompts like 1,2,3,4,5,6,7,8,9,a,b,c,d,e,f...

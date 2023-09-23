@@ -38,7 +38,7 @@ def _detect_format(path: Path, format: Optional[Format]) -> Optional[Format]:
     return format
 
 
-# doesnt expose underlying kwargs from namedtuple_sequence_dump
+# doesn't expose underlying kwargs from namedtuple_sequence_dump
 # and namedtuple_sequence_load on purpose -- so that its less
 # likely its mistyped. Can always use the underlying
 # functions if you'd prefer to do that.
@@ -75,7 +75,7 @@ def dump_to(
         f.write(nt_string)
 
 
-# args are slightly reordered here, comapared to json.load
+# args are slightly reordered here, compared to json.load
 # to be consistent with dump_to
 def load_from(
     to: Type[NT],

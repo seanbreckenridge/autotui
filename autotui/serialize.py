@@ -99,7 +99,7 @@ def serialize_namedtuple(
         if is_supported_container(attr_type):
             container_type, internal_type = get_collection_types(attr_type)
             # if is_optional == True, attr_value can't be None
-            # if we're serialzing an non-optional, and the value is null,
+            # if we're serializing an non-optional, and the value is null,
             # set it to an empty container...
             # you can't pass a type_serializer (which is passed to _serialize_type)
             # to handle the internal type of a collection, if the collection is None
@@ -126,7 +126,7 @@ def serialize_namedtuple(
             # b: Optional[str]
             # contrary to above, if attr_value here is None, we can try to use
             # any type_serializers for the attr_type that the user passed.
-            # If that doesn't work, it warns the user that theres no way to
+            # If that doesn't work, it warns the user that there's no way to
             # serialize a NoneType
             json_dict[attr_name] = _serialize_type(
                 attr_value, attr_type, is_optional, type_serializers
@@ -225,7 +225,7 @@ def deserialize_namedtuple(
             json_dict[attr_name] = attr_deserializers[attr_name](loaded_value)
             continue
 
-        # key wasnt in loaded value
+        # key wasn't in loaded value
         if loaded_value is None and not is_optional:
             warn(
                 f"Expected key {attr_name} on non-optional field, no such key existed in loaded data"
@@ -233,7 +233,7 @@ def deserialize_namedtuple(
 
         if is_supported_container(attr_type):
             container_type, internal_type = get_collection_types(attr_type)
-            # if we didnt load anything (null or key didnt exist)
+            # if we didn't load anything (null or key didn't exist)
             if loaded_value is None:
                 if not is_optional:
                     warn(
@@ -250,7 +250,7 @@ def deserialize_namedtuple(
                 # - Optional[List[int]]
                 # should the value be null? should it be empty list?
                 # Does it somehow mean
-                # - List[Optional[int]] (it shouldnt)
+                # - List[Optional[int]] (it shouldn't)
                 # this warns in cases I think are wrong, but doesn't enforce anything
                 json_dict[attr_name] = container_type(
                     [

@@ -179,7 +179,7 @@ def prompt_datetime(
         dt = dateparser.parse(resp)
         assert dt is not None and isinstance(
             dt, datetime
-        ), "Fatal Erorr; Could not parse response from datetime prompt into a datetime"
+        ), "Fatal Error; Could not parse response from datetime prompt into a datetime"
         return dt
     else:
         parsed_time: Optional[datetime] = None
@@ -192,7 +192,7 @@ def prompt_datetime(
             if time_str is None:
                 # hmm -- is this dangerous? user is prompting, so unless they've left the file
                 # open this should be fine. everything in shortcuts.py is atomic-like
-                # on purpose so this doesnt run into a problem there
+                # on purpose so this doesn't run into a problem there
                 #
                 # the alternative is to write bogus info, but perhaps that runs into
                 # less problems with losing data?
@@ -352,7 +352,7 @@ def prompt_wrap_error(
                     if isinstance(e, catchable):
                         raise ValidationError(message=str(e))
                 else:
-                    # if the user didnt specify this as an error to catch
+                    # if the user didn't specify this as an error to catch
                     raise e
 
     return func(prompt(m, validator=LambdaPromptValidator()))

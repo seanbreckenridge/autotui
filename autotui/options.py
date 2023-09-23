@@ -97,7 +97,7 @@ def _load_global_options() -> None:
     do this once, when the file is loaded
     """
     # if environment variable is set, permanently set the option using a local global_id
-    # option. That should always remain in the set, so this will remain enabled irregardless
+    # option. That should always remain in the set, so this will remain enabled regardless
     # of any other contextmanager calls
     global_id = object()
     for key in os.environ:

@@ -53,7 +53,7 @@ def test_default_values() -> None:
     now = datetime.now()
     current_datetime_func = lambda: now
 
-    # shouldnt prompt interactively because were setting defaults
+    # shouldn't prompt interactively because were setting defaults
     val = autotui.prompt_namedtuple(
         P,
         attr_use_values={"a": 5, "b": 10.0},
@@ -221,7 +221,7 @@ def test_basic_iterable_deserialize() -> None:
 def test_leave_optional_collection_none() -> None:
     loaded: Json = json.loads('{"b": [true]}')
     l = autotui.deserialize_namedtuple(loaded, L)
-    # shouldnt warn, just serializes to None
+    # shouldn't warn, just serializes to None
     assert l.a == None
     assert l.b == {True}
 
@@ -282,7 +282,7 @@ def deserialize_a(x: Optional[int]) -> int:
 def test_optional_specified_null_deserializer() -> None:
     # note: type_deserializers dont specify the type of the dynamically loaded value,
     # they specify the type specified by the namedtuple.
-    # so cant do something like
+    # so can't do something like
     # loaded = json.loads("{}")
     # none_deserializer = {type(None): lambda _x: 0}
     # x = autotui.deserialize_namedtuple(loaded, X_OPT, type_deserializers=none_deserializer)

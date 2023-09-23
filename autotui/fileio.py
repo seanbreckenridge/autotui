@@ -87,7 +87,7 @@ def namedtuple_sequence_loads(
     format: Optional[Format] = "json",
 ) -> List[NT]:
     """
-    Load a list of namedtuples specificed by 'to' from a JSON string
+    Load a list of namedtuples specified by 'to' from a JSON string
     """
 
     if format == "json":
@@ -124,7 +124,7 @@ def namedtuple_sequence_load(
     format: Optional[Format] = "json",
 ) -> List[NT]:
     """
-    Load a list of namedtuples to the namedtuple specificed by 'to'
+    Load a list of namedtuples to the namedtuple specified by 'to'
     from a file-like object containing JSON
     """
     return namedtuple_sequence_loads(

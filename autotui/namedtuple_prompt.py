@@ -157,7 +157,7 @@ def _maybe_wrap_optional(
 
 def _create_callable_prompt(attr_name: str, handler: AutoHandler) -> PromptFunction:
     """
-    Create a callable function with the informaton from a AutoHandler
+    Create a callable function with the information from a AutoHandler
     """
     from .prompts import prompt_wrap_error
 
@@ -208,8 +208,8 @@ def namedtuple_prompt_funcs(
     """
     Parses the signature of a NamedTuple received from the User
 
-    If any of the parameters cant be handled by autotui supported validators,
-    checks the vaidators dict for user-supplied ones.
+    If any of the parameters can't be handled by autotui supported validators,
+    checks the validators dict for user-supplied ones.
 
     Else, prints an error and fails
     """
