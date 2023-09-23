@@ -149,7 +149,7 @@ def _deserialize_type(
     # is falsey value
     if value is None:
         if not is_optional:
-            if type(value) != cls:
+            if type(value) != cls:  # noqa: E721
                 warn(
                     f"For value {value}, expected type {cls.__name__}, found {type(value).__name__}"
                 )
@@ -176,7 +176,7 @@ def _deserialize_type(
     elif cls == Decimal:
         return Decimal(value)
     elif cls == bool:
-        if type(value) == str:
+        if type(value) == str:  # noqa: E721
             lval = value.lower()
             if lval == "true":
                 return True

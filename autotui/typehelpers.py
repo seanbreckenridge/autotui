@@ -99,7 +99,7 @@ def get_union_args(cls: Type) -> Optional[Tuple[List[Type[Any]], bool]]:
         return None
 
     args: Type = cls.__args__
-    arg_list: List[Type] = [e for e in args if e != type(None)]
+    arg_list: List[Type] = [e for e in args if e != type(None)]  # noqa: E721
     is_opt = type(None) in args
     assert len(arg_list) > 0
     return arg_list, is_opt
