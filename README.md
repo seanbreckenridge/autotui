@@ -9,12 +9,12 @@ It also wraps [`prompt_toolkit`](https://python-prompt-toolkit.readthedocs.io/en
 - [Supported Types](#supported-types)
 - [Install](#install)
 - [Usage](#usage)
-  * [Enabling Options](#enabling-options)
-  * [Partial prompts](#partial-prompts)
-  * [YAML](#yaml)
-  * [Picking items](#picking)
-  * [Editing items](#editing)
-  * [Custom types/prompting](#custom-types)
+  - [Enabling Options](#enabling-options)
+  - [Partial prompts](#partial-prompts)
+  - [YAML](#yaml)
+  - [Picking items](#picking)
+  - [Editing items](#editing)
+  - [Custom types/prompting](#custom-types)
 - [Testing](#testing)
 
 ## Supported Types

@@ -40,7 +40,9 @@ def _ui_getchar_pick(choices: Sequence[str], prompt: str = "Select from: ") -> i
 DONE_EDITING = "DONE EDITING"
 
 
-def edit_namedtuple(nt: NT, print_namedtuple: bool = False, loop: bool = False, **kwargs: Any) -> NT:
+def edit_namedtuple(
+    nt: NT, print_namedtuple: bool = False, loop: bool = False, **kwargs: Any
+) -> NT:
     """Edit a namedtuple."""
     assert is_namedtuple_obj(nt), f"nt {nt} is not a namedtuple"
     nt_dict: Dict[str, Any] = nt._asdict()  # type: ignore
