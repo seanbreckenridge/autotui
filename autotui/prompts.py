@@ -228,7 +228,8 @@ def prompt_enum(
     for_attr: Optional[str] = None,
     prompt_msg: Optional[str] = None,
 ) -> Enum:
-    m: str = create_prompt_string(str, for_attr, prompt_msg)
+    enum_name: str = getattr(enum_cls, "__name__", "Enum")
+    m: str = create_prompt_string(enum_name, for_attr, prompt_msg)
     enum_mapping: Dict[str, Enum] = enum_attribute_dict(enum_cls)
 
     enum_desc_map = _create_enum_word_targets(enum_mapping)
