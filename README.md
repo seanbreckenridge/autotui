@@ -124,6 +124,7 @@ Options:
 
 - `LIVE_DATETIME`: Enables the live datetime prompt
 - `CONVERT_UNKNOWN_ENUM_TO_NONE`: If an enum value is not found on the enumeration (e.g. you remove some enum value), convert it to `None` instead of raising a `ValueError`
+- `ENUM_FZF`: Use `fzf` to prompt for enums
 
 ### Partial prompts
 

@@ -216,7 +216,6 @@ def _create_enum_word_targets(enum_mapping: Dict[str, Enum]) -> Dict[str, Enum]:
     # type. When the user selects one of the descriptions, we can use this map
     # to get the corresponding Enum value
     enum_desc_map: Dict[str, Enum] = {}
-    # regular key
     for k, v in enum_mapping.items():
         if k not in enum_desc_map:
             enum_desc_map[k] = v
@@ -234,41 +233,59 @@ def prompt_enum(
 
     enum_desc_map = _create_enum_word_targets(enum_mapping)
 
-    class EnumClosureValidator(Validator):
-        def __init__(self):
-            self.text = ""
-
-        def validate(self, document: Document) -> None:
-            # hmm; don't strip here since spaces might be part of the enum?
-            self.text = document.text
-            if self.text in enum_desc_map:
-                return
-            raise ValidationError(
-                message=f"{self.text} is not part of the {enum_cls} enum"
+    if is_enabled(Option.ENUM_FZF):
+        try:
+            import pyfzf
+        except ImportError as e:
+            print(
+                "Could not import fzf wrapper, install with 'pip install pyfzf-iter'",
+                file=sys.stderr,
             )
+            raise e
 
-        def toolbar(self):
-            if self.text in enum_desc_map:
-                return str(enum_desc_map[self.text])
-            else:
-                return "..."
-
-    validator = EnumClosureValidator()
-
-    # prompt using a repl prompt with autocompletion/validation
-    resp = prompt(
-        m,
-        completer=FuzzyWordCompleter(words=list(enum_desc_map)),
-        validator=validator,
-        bottom_toolbar=validator.toolbar,
-    )
-
-    # use what the user typed
-    if resp in enum_desc_map:
+        fzf = pyfzf.FzfPrompt(default_options="--no-multi -i --height=85%")
+        resp = fzf.prompt(enum_desc_map.keys())
+        if not isinstance(resp, str):
+            raise ValueError("Did not select an option")
+        assert resp in enum_desc_map, f"Selected option {resp} not in enum"
         return enum_desc_map[resp]
+    else:
 
-    # else lowercase
-    return enum_desc_map[resp.casefold()]
+        class EnumClosureValidator(Validator):
+            def __init__(self):
+                self.text = ""
+
+            def validate(self, document: Document) -> None:
+                # hmm; don't strip here since spaces might be part of the enum?
+                self.text = document.text
+                if self.text in enum_desc_map:
+                    return
+                raise ValidationError(
+                    message=f"{self.text} is not part of the {enum_cls} enum"
+                )
+
+            def toolbar(self):
+                if self.text in enum_desc_map:
+                    return str(enum_desc_map[self.text])
+                else:
+                    return "..."
+
+        validator = EnumClosureValidator()
+
+        # prompt using a repl prompt with autocompletion/validation
+        resp = prompt(
+            m,
+            completer=FuzzyWordCompleter(words=list(enum_desc_map)),
+            validator=validator,
+            bottom_toolbar=validator.toolbar,
+        )
+
+        # use what the user typed
+        if resp in enum_desc_map:
+            return enum_desc_map[resp]
+
+        # else lowercase
+        return enum_desc_map[resp.casefold()]
 
 
 ## LIST/SET repeat-prompt?

@@ -9,6 +9,7 @@ class Option(Enum):
     DATETIME_LIVE = auto()
     LIVE_DATETIME = DATETIME_LIVE  # here for backwards compatibility
     CONVERT_UNKNOWN_ENUM_TO_NONE = auto()
+    ENUM_FZF = auto()
 
     @property
     def names(self) -> List[str]:
