@@ -17,6 +17,7 @@ from typing import (
     Dict,
 )
 from enum import Enum
+from .exceptions import AutoTUIException
 
 # namedtuple type - can't really bind this to anything, since tuple
 # is too generic, and NamedTuple isn't a type
@@ -150,7 +151,7 @@ def enum_getval(enum: Type[Enum], value: Any) -> Enum:
         return enum(value)
     except ValueError:
         pass
-    raise ValueError(
+    raise AutoTUIException(
         f"Could not find {value} on Enumeration {enum} {enum.__members__.items()}"
     )
 

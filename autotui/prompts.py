@@ -17,6 +17,7 @@ from prompt_toolkit.shortcuts import button_dialog, input_dialog, message_dialog
 
 from .typehelpers import T, enum_attribute_dict
 from .options import is_enabled, Option
+from .exceptions import AutoTUIException
 
 # remove pytz warning from dateparser module
 warnings.filterwarnings("ignore", "The localize method is no longer necessary")
@@ -246,7 +247,7 @@ def prompt_enum(
         fzf = pyfzf.FzfPrompt(default_options="--no-multi -i --height=85%")
         resp = fzf.prompt(enum_desc_map.keys())
         if not isinstance(resp, str):
-            raise ValueError("Did not select an option")
+            raise AutoTUIException("Did not select an option")
         assert resp in enum_desc_map, f"Selected option {resp} not in enum"
         return enum_desc_map[resp]
     else:
