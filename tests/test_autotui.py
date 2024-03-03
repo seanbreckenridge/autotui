@@ -581,7 +581,7 @@ def test_enum_use_key() -> None:
 
 def test_enum_fails() -> None:
     ds = {"choice": "xx"}
-    with pytest.raises(ValueError, match=r"Could not find xx on Enumeration"):
+    with pytest.raises(AutoTUIException, match=r"Could not find xx on Enumeration"):
         autotui.deserialize_namedtuple(ds, DAT)
 
 
@@ -643,7 +643,7 @@ class UDAT(NamedTuple):
 def test_removing_enum_value() -> None:
     assert autotui.deserialize_namedtuple({"choice": "x"}, UDAT) == UDAT(choice=UEnum.x)
 
-    with pytest.raises(ValueError, match="Could not find z on Enumeration"):
+    with pytest.raises(AutoTUIException, match="Could not find z on Enumeration"):
         autotui.deserialize_namedtuple({"choice": "z"}, UDAT)
 
     with_none = UDAT(choice=None)  # type: ignore
