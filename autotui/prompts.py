@@ -246,8 +246,9 @@ def prompt_enum(
 
         fzf = pyfzf.FzfPrompt(default_options="--no-multi -i --height=85%")
         resp = fzf.prompt(enum_desc_map.keys())
-        if not isinstance(resp, str):
+        if not isinstance(resp, list) or len(resp) == 0:
             raise AutoTUIException("No option selected")
+        resp = resp[0]
         assert resp in enum_desc_map, f"Selected option {resp} not in enum"
         return enum_desc_map[resp]
     else:
