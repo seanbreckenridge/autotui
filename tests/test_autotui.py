@@ -651,5 +651,5 @@ def test_removing_enum_value() -> None:
         assert autotui.deserialize_namedtuple({"choice": "z"}, UDAT) == with_none
 
     # make sure it raises again after the option is turned off
-    with pytest.raises(ValueError, match="Could not find z on Enumeration"):
+    with pytest.raises(AutoTUIException, match="Could not find z on Enumeration"):
         autotui.deserialize_namedtuple({"choice": "z"}, UDAT)

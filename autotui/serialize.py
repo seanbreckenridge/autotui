@@ -17,6 +17,7 @@ from .typehelpers import (
     T,
 )
 from .warn import warn
+from .exceptions import AutoTUIException
 
 
 def _serialize_type(
@@ -161,7 +162,7 @@ def _deserialize_type(
         if is_enabled(Option.CONVERT_UNKNOWN_ENUM_TO_NONE):
             try:
                 return enum_getval(cls, value)
-            except ValueError as v:
+            except (ValueError, AutoTUIException) as v:
                 if "Could not find" in str(v):
                     return None
                 raise v
