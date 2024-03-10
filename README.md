@@ -164,7 +164,7 @@ import click
 
 def edit_in_vim() -> str:
     m = click.edit(text=None, editor="vim")
-    return m if m is None else m.strip()
+    return "" if m is None else m.strip()
 
 
 class JournalEntry(NamedTuple):
