@@ -277,7 +277,7 @@ def prompt_enum(
         if is_enabled(Option.CLICK_PROMPT):
             # these is no autocomplete in click, warn the user to enable ENUM_FZF instead
             click.echo(
-                "No autocompletion for enums in click. Consider enabling ENUM_FZF option",
+                "No autocompletion for enums in click. Consider enabling the ENUM_FZF option",
                 err=True,
             )
 
