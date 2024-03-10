@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Type, Optional, Callable, List, Union, Dict
 from enum import Enum
 
+import click
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import Style
 from prompt_toolkit.validation import (
@@ -65,7 +66,11 @@ def create_prompt_string(
 
 def prompt_str(for_attr: Optional[str] = None, prompt_msg: Optional[str] = None) -> str:
     m: str = create_prompt_string(str, for_attr, prompt_msg)
-    return prompt(m)
+    if is_enabled(Option.CLICK_PROMPT):
+        return click.prompt(m, prompt_suffix="")
+    else:
+        m: str = create_prompt_string(str, for_attr, prompt_msg)
+        return prompt(m)
 
 
 ## INT
@@ -82,7 +87,10 @@ class IntValidator(Validator):
 
 def prompt_int(for_attr: Optional[str] = None, prompt_msg: Optional[str] = None) -> int:
     m: str = create_prompt_string(int, for_attr, prompt_msg)
-    return int(prompt(m, validator=IntValidator()))
+    if is_enabled(Option.CLICK_PROMPT):
+        return click.prompt(m, type=int, prompt_suffix="")
+    else:
+        return int(prompt(m, validator=IntValidator()))
 
 
 ## FLOAT
@@ -101,7 +109,10 @@ def prompt_float(
     for_attr: Optional[str] = None, prompt_msg: Optional[str] = None
 ) -> float:
     m: str = create_prompt_string(float, for_attr, prompt_msg)
-    return float(prompt(m, validator=FloatValidator()))
+    if is_enabled(Option.CLICK_PROMPT):
+        return click.prompt(m, type=float, prompt_suffix="")
+    else:
+        return float(prompt(m, validator=FloatValidator()))
 
 
 ## BOOL
@@ -113,12 +124,15 @@ def prompt_bool(
     dialog_title: str = "===",
 ) -> bool:
     m: str = create_prompt_string(bool, for_attr, prompt_msg)
-    return button_dialog(
-        title=dialog_title,
-        text=m,
-        buttons=[("True", True), ("False", False)],
-        style=STYLE,
-    ).run()
+    if is_enabled(Option.CLICK_PROMPT):
+        return click.confirm(m, default=True, prompt_suffix="")
+    else:
+        return button_dialog(
+            title=dialog_title,
+            text=m,
+            buttons=[("True", True), ("False", False)],
+            style=STYLE,
+        ).run()
 
 
 ## DATETIME
@@ -252,6 +266,11 @@ def prompt_enum(
         assert resp in enum_desc_map, f"Selected option {resp} not in enum"
         return enum_desc_map[resp]
     else:
+        if is_enabled(Option.CLICK_PROMPT):
+            # these is no autocomplete in click, warn the user to enable ENUM_FZF instead
+            click.echo(
+                "No autocompletion for enums in click. Consider enabling ENUM_FZF option", err=True
+            )
 
         class EnumClosureValidator(Validator):
             def __init__(self):
@@ -304,12 +323,16 @@ def prompt_ask_another(
             for_attr is not None
         ), "Expected 'for_attr'; an attribute name to prompt for!"
         m = f"Add another item to '{for_attr}'?"
-    return button_dialog(
-        title=dialog_title,
-        text=m,
-        buttons=[("Yes", True), ("No", False)],
-        style=STYLE,
-    ).run()
+
+    if is_enabled(Option.CLICK_PROMPT):
+        return click.confirm(f"{dialog_title} {m}", default=True, prompt_suffix="")
+    else:
+        return button_dialog(
+            title=dialog_title,
+            text=m,
+            buttons=[("Yes", True), ("No", False)],
+            style=STYLE,
+        ).run()
 
 
 ## Optional
@@ -331,15 +354,21 @@ def prompt_optional(
             for_attr is not None
         ), "Expected 'for_attr'; an attribute name to prompt for!"
         m = f"'{for_attr}' is optional. Add?"
-    if button_dialog(
-        title=dialog_title,
-        text=m,
-        buttons=[("Add", True), ("Skip", False)],
-        style=STYLE,
-    ).run():
-        return func()
+    if is_enabled(Option.CLICK_PROMPT):
+        if click.confirm(m, default=True, prompt_suffix=""):
+            return func()
+        else:
+            return None
     else:
-        return None
+        if button_dialog(
+            title=dialog_title,
+            text=m,
+            buttons=[("Add", True), ("Skip", False)],
+            style=STYLE,
+        ).run():
+            return func()
+        else:
+            return None
 
 
 ##  wrap some function and display the specified thrown errors as validation errors
