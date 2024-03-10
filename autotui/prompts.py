@@ -67,9 +67,11 @@ def create_prompt_string(
 def prompt_str(for_attr: Optional[str] = None, prompt_msg: Optional[str] = None) -> str:
     m: str = create_prompt_string(str, for_attr, prompt_msg)
     if is_enabled(Option.CLICK_PROMPT):
-        return click.prompt(m, prompt_suffix="")
+        ret = click.prompt(m, prompt_suffix="")
+        if not isinstance(ret, str):
+            raise AutoTUIException(f"Expected string, got {ret} {type(ret)}")
+        return ret
     else:
-        m: str = create_prompt_string(str, for_attr, prompt_msg)
         return prompt(m)
 
 
@@ -88,7 +90,10 @@ class IntValidator(Validator):
 def prompt_int(for_attr: Optional[str] = None, prompt_msg: Optional[str] = None) -> int:
     m: str = create_prompt_string(int, for_attr, prompt_msg)
     if is_enabled(Option.CLICK_PROMPT):
-        return click.prompt(m, type=int, prompt_suffix="")
+        ret = click.prompt(m, type=int, prompt_suffix="")
+        if not isinstance(ret, int):
+            raise AutoTUIException(f"Expected int, got {ret} {type(ret)}")
+        return ret
     else:
         return int(prompt(m, validator=IntValidator()))
 
@@ -110,7 +115,10 @@ def prompt_float(
 ) -> float:
     m: str = create_prompt_string(float, for_attr, prompt_msg)
     if is_enabled(Option.CLICK_PROMPT):
-        return click.prompt(m, type=float, prompt_suffix="")
+        ret = click.prompt(m, type=float, prompt_suffix="")
+        if not isinstance(ret, float):
+            raise AutoTUIException(f"Expected float, got {ret} {type(ret)}")
+        return ret
     else:
         return float(prompt(m, validator=FloatValidator()))
 
@@ -269,7 +277,8 @@ def prompt_enum(
         if is_enabled(Option.CLICK_PROMPT):
             # these is no autocomplete in click, warn the user to enable ENUM_FZF instead
             click.echo(
-                "No autocompletion for enums in click. Consider enabling ENUM_FZF option", err=True
+                "No autocompletion for enums in click. Consider enabling ENUM_FZF option",
+                err=True,
             )
 
         class EnumClosureValidator(Validator):
